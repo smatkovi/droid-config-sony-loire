@@ -1,6 +1,6 @@
 Description: Pattern with packages for f5321 configurations
 Name: jolla-configuration-f5321
 Requires:
-- patterns-sailfish-device-configuration-f5321
+- patterns-sailfish-device-configuration-kugo
 
 Summary: Jolla Configuration f5321

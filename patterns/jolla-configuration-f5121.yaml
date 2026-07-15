@@ -1,30 +1,6 @@
 Description: Pattern with packages for f5121 configurations
 Name: jolla-configuration-f5121
 Requires:
-- pattern:jolla-hw-adaptation-suzu
-
-- droid-config-f5121-sailfish
-- droid-config-f5121-pulseaudio-settings
-- droid-config-f5121-policy-settings
-- droid-config-f5121-preinit-plugin
-- droid-config-f5121-flashing
-- droid-config-f5121-bluez5
-- droid-hal-version-f5121
-
-- patterns-sailfish-applications
-- patterns-sailfish-ui
-- patterns-sailfish-cellular-apps
-
-- sailfish-content-graphics-z@ICON_RES@
-
-# jolla-settings-system-nfc
-- jolla-settings-system-flashlight
-
-- geoclue-provider-mlsdb
-- csd
-- mapplauncherd-booster-silica-qt5-media
-
-- patterns-sailfish-consumer-generic
-- pattern:sailfish-porter-tools
+- patterns-sailfish-device-configuration-f5121
 
 Summary: Jolla Configuration f5121

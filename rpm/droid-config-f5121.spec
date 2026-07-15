@@ -8,3 +8,5 @@
 %define community_adaptation 1
 
 %include droid-configs-device/droid-configs.inc
+%include patterns/patterns-sailfish-device-adaptation-suzu.inc
+%include patterns/patterns-sailfish-device-configuration-f5121.inc

@@ -1,5 +1,5 @@
 %define device kugo
-%define rpm_device f5321
+%define rpm_device kugo
 %define device_pretty Xperia X Compact
 
 %define pixel_ratio 1.25
@@ -10,4 +10,3 @@
 %include droid-configs-device/droid-configs.inc
 %include patterns/patterns-sailfish-device-adaptation-kugo.inc
 %include patterns/patterns-sailfish-device-configuration-kugo.inc
-%include patterns/patterns-sailfish-device-configuration-f5321.inc

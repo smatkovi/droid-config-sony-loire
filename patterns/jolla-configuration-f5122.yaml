@@ -1,31 +1,6 @@
 Description: Pattern with packages for f5122 configurations
 Name: jolla-configuration-f5122
 Requires:
-- pattern:jolla-hw-adaptation-suzu
-
-- droid-config-f5122-sailfish
-- droid-config-f5122-pulseaudio-settings
-- droid-config-f5122-policy-settings
-- droid-config-f5122-preinit-plugin
-- droid-config-f5122-flashing
-- droid-config-f5122-bluez5
-- droid-hal-version-f5122
-
-- patterns-sailfish-applications
-- patterns-sailfish-ui
-- patterns-sailfish-cellular-apps
-
-- sailfish-content-graphics-z@ICON_RES@
-
-# jolla-settings-system-nfc
-- jolla-settings-system-flashlight
-- jolla-settings-networking-multisim
-
-- geoclue-provider-mlsdb
-- csd
-- mapplauncherd-booster-silica-qt5-media
-
-- patterns-sailfish-consumer-generic
-- pattern:sailfish-porter-tools
+- patterns-sailfish-device-configuration-f5122
 
 Summary: Jolla Configuration f5122
