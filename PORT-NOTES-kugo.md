@@ -79,3 +79,26 @@ Ohne FORCE_HWC2 öffnet lipstick den HAL selbst und blockiert den Service.
 - Icons/DPI zu groß
 - USB-Netz bricht im späten Boot-Zustand ab (Debug-telnet nur früh erreichbar)
 - Sensoren, Audio, Modem ungetestet
+
+## Firmware fehlt komplett (Stand 24.07.2026, abends)
+
+`/vendor/firmware/` (= Sony oem-Partition) enthält **keine** Subsystem-Firmware:
+kein adsp.mdt/adsp.b0x, kein modem.*, kein mba.*, kein fw_bcmdhd.bin.
+
+Folge: alle drei Subsysteme bleiben OFFLINING
+(`/sys/bus/msm_subsys/devices/*/state`), daher:
+
+- kein ADSP → keine Soundkarte (`/proc/asound/cards` = "no soundcards"),
+  module-droid-card scheitert mit "Failed to open audio hw device"
+- kein Modem → keine Telefonie
+- kein WLAN (bcmdhd: `wl_android_wifi_on failed (-35)`,
+  sucht /vendor/firmware/fw_bcmdhd.bin + bcmdhd.cal)
+
+Quelle für die Blobs: Sony Stock-ROM (XperiFirm) oder LineageOS-Build für kugo,
+Verzeichnis system/vendor/firmware bzw. system/etc/firmware.
+
+Audio-Stack ist ansonsten vollständig vorbereitet:
+- audio.primary.msm8952.so gebaut + Symlinks .kugo/.default in /vendor/lib64/hw
+- audio_policy_configuration.xml + mixer_paths.xml aus device/sony/kugo/rootdir/vendor/etc
+- die 5 xi:include-Dateien aus frameworks/av/services/audiopolicy/config
+- libtinyalsa, libtinycompress, libaudioroute u.a. aus system/vendor/lib64
