@@ -1,0 +1,10 @@
+[Unit]
+Description=kugo: mount QC firmware partitions and boot ADSP
+Before=droid-hal-init.service
+DefaultDependencies=no
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'mkdir -p /firmware /dsp; mount -o ro /dev/block/bootdevice/by-name/modem /firmware; mount -o ro /dev/block/bootdevice/by-name/dsp /dsp; echo /firmware/image > /sys/module/firmware_class/parameters/path; echo 1 > /sys/kernel/boot_adsp/boot; exit 0'
+[Install]
+WantedBy=sysinit.target

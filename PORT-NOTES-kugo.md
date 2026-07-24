@@ -80,7 +80,22 @@ Ohne FORCE_HWC2 öffnet lipstick den HAL selbst und blockiert den Service.
 - USB-Netz bricht im späten Boot-Zustand ab (Debug-telnet nur früh erreichbar)
 - Sensoren, Audio, Modem ungetestet
 
-## Firmware fehlt komplett (Stand 24.07.2026, abends)
+## Firmware: GELÖST (24.07.2026)
+
+Die Firmware fehlt nicht — sie liegt auf eigenen Partitionen, die nur nicht
+gemountet waren:
+
+    mount -o ro /dev/block/bootdevice/by-name/modem /firmware   # adsp.mdt, modem.*, mba.*
+    mount -o ro /dev/block/bootdevice/by-name/dsp /dsp          # DSP-Codec-Module
+    echo /firmware/image > /sys/module/firmware_class/parameters/path
+    echo 1 > /sys/kernel/boot_adsp/boot                          # ADSP starten!
+
+Danach: subsys1 (adsp) = ONLINE, Soundkarte msm8976-tasha-snd-card erscheint,
+module-droid-card lädt, sink.primary_output + sink.deep_buffer da, Ton geht.
+
+Als `firmware-mount.service` in sparse/ festgehalten (Before=droid-hal-init).
+
+## Alter Stand (überholt) — Firmware schien zu fehlen (Stand 24.07.2026, abends)
 
 `/vendor/firmware/` (= Sony oem-Partition) enthält **keine** Subsystem-Firmware:
 kein adsp.mdt/adsp.b0x, kein modem.*, kein mba.*, kein fw_bcmdhd.bin.
