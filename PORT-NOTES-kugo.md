@@ -117,3 +117,37 @@ Audio-Stack ist ansonsten vollständig vorbereitet:
 - audio_policy_configuration.xml + mixer_paths.xml aus device/sony/kugo/rootdir/vendor/etc
 - die 5 xi:include-Dateien aus frameworks/av/services/audiopolicy/config
 - libtinyalsa, libtinycompress, libaudioroute u.a. aus system/vendor/lib64
+
+## Graphics bringup (2026-07-24)
+
+Boot to UI with working touch. Four root causes, all fixed:
+
+1. **libsdmextension.so stub must NOT be in the image.** A dummy stub
+   (built manually from a local `external/dummylib`, never in
+   PRODUCT_PACKAGES) ended up in out/ and thus in the image. SDM
+   tolerates a *failed* dlopen of libsdmextension (runs without
+   extensions), but a *successful* dlopen followed by a failed
+   dlsym(CreateExtensionInterface) hard-aborts CoreImpl::Init ->
+   composer-service dies with SIGABRT at every start.
+   Removed external/dummylib and all traces from out/ (2026-07-24).
+   If composer-service ever aborts right after "CoreImpl::Init: Unable
+   to load symbols", check for a stub again.
+
+2. **composer-service needs LD_LIBRARY_PATH** to dlopen Adreno libs
+   (libadreno_utils/libgsl live in /vendor/lib64 only; no ld.config.txt
+   in this setup). Set via Environment= in droid-hal-extras.service.
+
+3. **/dev/ion and /dev/kgsl-3d0 need non-root access** (covered by
+   sparse 99-kugo-perms.rules). Symptoms otherwise: gralloc SEGV in
+   AdrenoMemInfo::AlignUnCompressedRGB (null instance after
+   IonAlloc::Init EPERM) for ion; "Cannot find EGLConfig" +
+   eglCreateWindowSurface 0x3001 for kgsl.
+
+4. **clearpad needs ID_INPUT_TOUCHSCREEN=1** (sparse
+   62-kugo-touchclass.rules), otherwise Qt evdevtouch autodiscovery
+   finds no touchscreen in the startup wizard (runs plain
+   "-plugin evdevtouch" without device argument).
+
+Debug technique that cracked 1-3: run the failing binary under
+strace -f -s 200 and extract Android log messages (logd not running)
+via: grep -oE 'iov_base="[^"]{15,}"' trace | tail
