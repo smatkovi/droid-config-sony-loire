@@ -1,0 +1,11 @@
+[Unit]
+Description=Sony OEM partition (WLAN/BT firmware)
+
+[Mount]
+What=/dev/disk/by-partlabel/oem
+Where=/mnt/oem
+Type=ext4
+Options=ro,nofail
+
+[Install]
+WantedBy=local-fs.target

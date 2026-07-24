@@ -151,3 +151,25 @@ Boot to UI with working touch. Four root causes, all fixed:
 Debug technique that cracked 1-3: run the failing binary under
 strace -f -s 200 and extract Android log messages (logd not running)
 via: grep -oE 'iov_base="[^"]{15,}"' trace | tail
+
+## WLAN bringup (2026-07-24)
+
+WLAN works (scan + connect). Chain and fixes:
+
+- **Firmware lives on the Sony oem partition** (mmcblk0p39):
+  /mnt/oem/firmware/fw_bcmdhd.bin + bcmdhd.cal. Added mnt-oem.mount
+  (ro, nofail). Likely also relevant for other subsystem blobs.
+- **Kernel has CONFIG_BCMDHD_FW_PATH=/vendor/firmware/fw_bcmdhd.bin**
+  (and _NVRAM_PATH for the .cal); added symlinks there pointing into
+  /mnt/oem/firmware. Do NOT rely on the sysfs module parameters
+  (firmware_path/nvram_path): bcmdhd clears them on every chip
+  power-down (wifi off/on), which silently breaks the next firmware
+  download ("dongle image file download failed", devreset -35).
+- **connman vendor unit ships --noplugin=wifi**; added drop-in
+  50-enable-wifi.conf overriding ExecStart without it. Without the
+  wifi plugin connman never registers wlan0 with wpa_supplicant and
+  every scan returns "No carrier".
+- Chip is BCM43455 (0x4345 rev 6) on SDIO, bcmdhd built-in (=y),
+  nl80211 works fine once firmware is loaded. Placeholder MAC
+  00:90:4c:11:22:33 means firmware not loaded; real MAC comes from
+  the .cal.
