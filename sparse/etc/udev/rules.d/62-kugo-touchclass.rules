@@ -1,0 +1,3 @@
+# clearpad lacks ID_INPUT_TOUCHSCREEN, so Qt evdevtouch autodiscovery
+# never picks it up (startup wizard runs plain "-plugin evdevtouch").
+KERNEL=="event*", SUBSYSTEM=="input", ATTRS{name}=="clearpad", ENV{ID_INPUT_TOUCHSCREEN}="1"

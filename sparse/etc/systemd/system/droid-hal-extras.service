@@ -1,0 +1,13 @@
+[Unit]
+Description=SFOS kugo: Android HIDL services (manual additions)
+After=droid-hal-init.service
+Before=user@100000.service
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# composer-service dlopens Adreno libs which live in /vendor/lib64 only;
+# without this it aborts in CoreImpl::Init at boot.
+Environment=LD_LIBRARY_PATH=/vendor/lib64:/vendor/lib64/hw:/system/lib64
+ExecStart=/bin/sh -c '/system/bin/vndservicemanager /dev/vndbinder & sleep 2; /system/bin/hw/allocator-service & sleep 1; /system/bin/hw/composer-service & sleep 1; /system/bin/hw/configstore-service & exit 0'
+[Install]
+WantedBy=multi-user.target
