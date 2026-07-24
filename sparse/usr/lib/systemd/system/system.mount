@@ -1,0 +1,10 @@
+[Unit]
+Description=Droid mount for /system
+Before=droid-hal-init.service
+[Mount]
+What=/usr/libexec/droid-hybris/system
+Where=/system
+Type=none
+Options=bind
+[Install]
+WantedBy=local-fs.target

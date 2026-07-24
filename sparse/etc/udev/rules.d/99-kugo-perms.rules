@@ -1,0 +1,4 @@
+KERNEL=="event*", MODE="0666"
+KERNEL=="kgsl-3d0", MODE="0666"
+KERNEL=="ion", MODE="0666"
+KERNEL=="fb0", MODE="0666"

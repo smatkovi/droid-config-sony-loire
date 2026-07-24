@@ -1,0 +1,10 @@
+[Unit]
+Description=Droid mount for /vendor (Sony oem partition)
+Before=droid-hal-init.service
+[Mount]
+What=/dev/block/bootdevice/by-name/oem
+Where=/vendor
+Type=ext4
+Options=ro
+[Install]
+WantedBy=local-fs.target
