@@ -1,0 +1,11 @@
+[Unit]
+Description=BT UI-toggle watcher (kugo)
+After=bluetooth-rfkill-event.service
+
+[Service]
+ExecStart=/usr/bin/droid/kugo-bt-watcher.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
