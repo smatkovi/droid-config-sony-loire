@@ -272,3 +272,25 @@ eleganter als Symlinks (Idee aus altem Service); dsp-Partition
 (by-name/dsp) existiert auch - pruefen was sie enthaelt.
 Sensoren: ADSP online, aber SNS-Dienste registrieren sich nicht
 am Router (kein 0x100er auf Node 5) - naechste Session.
+
+### USB-Modi + Sensor-Forschungsstand (25.07. nachts)
+USB: usb-moded.service war MASKED (Bringup-Altlast) -> unmask +
+enable + Jolla-f5121-Configs (mode=ask, idVendor 05c6, jetzt
+sparse). Dialog erscheint beim Einstecken.
+Property-Raetsel geloest: droid-hal-init liest praktisch nur
+/default.prop (Ramdisk) - build.prop-Ebenen greifen nicht.
+ro.board.platform=msm8952 nach /default.prop (Verifikation nach
+naechstem Reboot; noetig fuer hw_get_module aller HALs).
+Sensoren-Stand: SNS nachweislich im adsp-Image (strings: b12=152
+Treffer), boot_slpi ist auf kugo SACKGASSE (kein slpi-Subsystem
+im DT, Fehler kommt sofort; Sony-rc schreibt beide Trigger nur
+weil sie plattformweit gilt). Alle Userspace-Zutaten stehen
+(Daemon, Libs, Registry, rmt_storage healthy mit 3 offenen
+Block-fds als root). SNS registriert trotzdem keine Dienste am
+Router (Node 5 nur Sysmon/SSCTL/2b/f). Daemon sendet nie (strace:
+0 sendto) - wartet per Discovery auf SMGR der nie kommt.
+OFFEN: Warum initialisiert SNS im adsp-Image nicht? Naechste
+Session: Sony init.qcom.rc Z.60-90 Kontext, SMEM-Flags,
+Vergleich mit anderen loire-SFOS-Ports (Jolla f5121 config macht
+NICHTS besonderes -> bei denen kam es aus der vollen Android-
+init-Umgebung).
