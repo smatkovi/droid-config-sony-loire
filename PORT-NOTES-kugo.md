@@ -240,3 +240,15 @@ adoptierten Adapter. Einschalten dauert 1-2 min. Root cause der
 Laufzeit-Fehlschlaege: mgmt-Init von bluetoothd traf auf halb-
 attachten Adapter (beim Boot verhindert Before=bluetooth.service
 genau das). GPS: noch nicht funktionierend, eigenes Kapitel.
+
+### App-Installations-Stack (Storeman-Fix, 25.07. abends)
+Storeman hing ewig in "refresh cache" + Segfault. Drei Ursachen:
+1. store-Repo verlangt Credentials -> PackageKit-Refresh fatal
+   abgebrochen. Fix: ssu dr store.
+2. polkit verlangte interaktive Auth fuer PackageKit-Aktionen,
+   Storeman kann nicht antworten. Fix: pkla-Regel (sparse).
+3. zypp-Cache lag unter /var/cache/zypp statt /home/.zypp-cache
+   (Sailfish-Standard) -> Storeman fand keine solv-Dateien,
+   Segfault. Fix: mv + Symlink /var/cache/zypp -> /home/.zypp-cache.
+Ausserdem: libsailfishapp-launcher noetig fuer QML-harbour-Apps
+(liefert /usr/bin/sailfish-qml), jetzt im Pattern.

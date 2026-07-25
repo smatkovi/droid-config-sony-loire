@@ -13,6 +13,7 @@ Requires: libhybris-libwayland-egl
 
 # Bluetooth
 Requires: bluetooth-rfkill-event-hciattach
+Requires: libsailfishapp-launcher
 
 # Telephony
 Requires: ofono-ril-binder-plugin
