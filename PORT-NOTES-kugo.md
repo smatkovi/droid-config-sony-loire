@@ -231,3 +231,12 @@ nicht auf Stock, muesste geschrieben werden - HAL-Blobs liegen
 schon in /vendor + /system/lib64); brcm_patchram_plus als RPM
 (Quelle github.com/AsteroidOS/brcm-patchram-plus, Build:
 sb2 -t sony-kugo-aarch64 gcc -O2 -o brcm_patchram_plus src/main.c).
+
+### BT-Toggle final (25.07. abends): funktioniert end-to-end
+kugo-bt-watcher v5 repliziert bei UI-An die Boot-Reihenfolge
+(bluetoothd stop -> frischer Attach -> rfkills unblocken ->
+bluetoothd start), bluez AutoEnable=true powert den neu
+adoptierten Adapter. Einschalten dauert 1-2 min. Root cause der
+Laufzeit-Fehlschlaege: mgmt-Init von bluetoothd traf auf halb-
+attachten Adapter (beim Boot verhindert Before=bluetooth.service
+genau das). GPS: noch nicht funktionierend, eigenes Kapitel.
