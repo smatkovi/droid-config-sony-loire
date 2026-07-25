@@ -192,3 +192,42 @@ after which these drop-ins should be removed.
 
 Also: /etc/login.defs needs GID_MIN (sparse shipped only UID_MIN),
 otherwise firejail warns "cannot read UID_MIN and/or GID_MIN".
+
+## Bluetooth (BCM4345C0, UART ttyHS0) - Stand 25.07.2026
+
+FUNKTIONIERT: BT 4.2 (Patchram rev 0x12f, vorher ROM-only 4.1),
+geraetespezifische MAC (WLAN-MAC+1), 3 Mbaud, ab Boot automatisch.
+
+Stack: bluetooth-rfkill-event-hciattach (Daemon, lauscht auf rfkill)
+-> brcm_patchram_plus (laedt /etc/firmware/BCM4345C0.hcd ueber
+/dev/ttyHS0, setzt bd_addr aus /factory/bluetooth_address).
+Config: /etc/bluetooth-rfkill-event/bcm4345c0.conf - lpm MUSS false
+sein (mit LPM schlaeft der Chip ein, alle HCI-Kommandos timeouten).
+MAC: bt-macaddr.service leitet sie beim Boot aus der WLAN-MAC ab.
+Firmware: einmalig kugo-setup-bt-firmware.sh (kopiert BCM43xx.hcd
+von Stock-p52, symlinkt als BCM4345C0.hcd nach /odm/firmware).
+
+KERNEL (branch kugo-sfos51): BT_BCM_COMBO + PROTOCOL/LINE_DISCIPLINE
+DRIVER (brcm-ldisc), BT_RFCOMM(+TTY) + BT_HIDP (sonst bluetoothd-
+Profile-Fehler, mgmt-Power scheitert), und der hci_ldisc-Fix:
+doppeltes hci_unregister_dev in hci_uart_tty_close -> list-poison-
+Panic dead000000000108 beim Beenden des Attach-Prozesses (2x
+reproduziert, pstore). Fix: einzelner unregister via
+test_and_clear_bit.
+
+BEDIENUNG / KNOWN ISSUES:
+- UI-Toggle AUS: geht (mgmt-Reset + rfkill-block).
+- UI-Toggle AN: nur mgmt, KEIN rfkill-unblock -> Daemon attacht
+  nicht. Einschalten: rfkill unblock bluetooth (+ ggf. systemctl
+  restart bluetooth-rfkill-event) oder Reboot.
+- Boot-Attach zuverlaessig (6/6); Laufzeit-Re-Attach ~50%, haengt
+  manchmal im Download - seit Kernel-Fix harmlos, Reboot hilft.
+- mgmt-Power-Cycle wirft Chip auf 115200 zurueck -> auf 3M danach
+  Funkstille bis Re-Attach.
+
+ZUKUNFT: mgmt-Watcher fuer natives UI-Toggle; bluebinder-Weg
+braeuchte UIM-Daemon (sysfs-install-Protokoll von brcm_sh_ldisc,
+nicht auf Stock, muesste geschrieben werden - HAL-Blobs liegen
+schon in /vendor + /system/lib64); brcm_patchram_plus als RPM
+(Quelle github.com/AsteroidOS/brcm-patchram-plus, Build:
+sb2 -t sony-kugo-aarch64 gcc -O2 -o brcm_patchram_plus src/main.c).
