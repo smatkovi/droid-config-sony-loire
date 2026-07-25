@@ -294,3 +294,23 @@ Session: Sony init.qcom.rc Z.60-90 Kontext, SMEM-Flags,
 Vergleich mit anderen loire-SFOS-Ports (Jolla f5121 config macht
 NICHTS besonderes -> bei denen kam es aus der vollen Android-
 init-Umgebung).
+
+### SENSOREN FUNKTIONIEREN - Rotation dreht! (25.07. 23:00)
+41 Sensoren: BMI160 Accel+Gyro, AK09915 Mag, APDS-9940 Prox+
+Licht, HSPPAD042A Druck + virtuelle. Die fehlenden Glieder nach
+der Zutatenjagd (libpower, QMI-Libs, sensors_settings, irsc_util,
+persist, board.platform in /default.prop):
+1. tftp_server = QMI-RFSA-Dateiserver (Name taeuscht!) - Stock
+   startet ihn als core-Service; jetzt in kugo-dsp-boot VOR dem
+   ADSP-Trigger.
+2. /data/misc/sensors fehlte -> sns_reg_storage_init des Daemons
+   scheiterte still, kein Registry-Dienst, ADSP-SNS init nie.
+   (strings sensors.qcom verriet den Pfad: /data/misc/sensors/
+   sns.reg). Jetzt im Setup-Skript.
+3. /dev/sensors war root:root 0600, Daemon laeuft als system ->
+   udev-Regel (KERNEL=="sensors").
+Nach Reboot mit vollstaendiger Kette: Node 5 voll mit SNS-
+Diensten (0x100 SMGR etc.), test_sensors "Got 41 sensors",
+sensorfwd startet (enabled), UI rotiert.
+boot_slpi bleibt wirkungslos auf kugo (kein slpi-Subsystem),
+schadet aber nicht - Sony-rc schreibt ihn auch.

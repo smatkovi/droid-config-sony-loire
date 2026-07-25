@@ -6,9 +6,10 @@ After=mnt-fw.mount persist.mount droid-hal-init.service
 [Service]
 Type=simple
 ExecStartPre=/bin/sh -c 'for f in /mnt/fw/image/*; do b=$(basename $f); [ -e /odm/firmware/$b ] || ln -s $f /odm/firmware/$b; done'
-ExecStartPre=/bin/sh -c 'sleep 1'
+ExecStartPre=/bin/sh -c '/mnt/oem/bin/tftp_server >/dev/null 2>&1 &'
+ExecStartPre=/bin/sh -c 'sleep 2'
 ExecStart=/mnt/oem/bin/rmt_storage
-ExecStartPost=/bin/sh -c 'sleep 3; echo 1 > /sys/kernel/boot_adsp/boot'
+ExecStartPost=/bin/sh -c 'sleep 3; echo 1 > /sys/kernel/boot_adsp/boot; sleep 2; echo 1 > /sys/kernel/boot_slpi/boot'
 Restart=on-failure
 RestartSec=5
 

@@ -40,3 +40,10 @@ done
 # hw_get_module needs the platform id (was empty -> no HAL ever found)
 grep -q "ro.board.platform" /usr/libexec/droid-hybris/system/build.prop 2>/dev/null || \
     echo "ro.board.platform=msm8952" >> /usr/libexec/droid-hybris/system/build.prop
+
+# --- sensor registry storage (daemon writes sns.reg here;
+# without it sns_reg_storage_init fails silently and the ADSP
+# SNS never initializes -> 0 sensors) ---
+mkdir -p /data/misc/sensors
+chown system:system /data/misc/sensors
+chmod 0775 /data/misc/sensors

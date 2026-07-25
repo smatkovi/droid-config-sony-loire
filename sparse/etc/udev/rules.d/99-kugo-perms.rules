@@ -6,3 +6,5 @@ KERNEL=="pcmC*", MODE="0666"
 KERNEL=="controlC*", MODE="0666"
 KERNEL=="compr*", MODE="0666"
 KERNEL=="hwC*", MODE="0666"
+# sensors.qcom (user system) needs its device node
+KERNEL=="sensors", OWNER="system", GROUP="system", MODE="0660"
