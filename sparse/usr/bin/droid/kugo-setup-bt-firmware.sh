@@ -11,3 +11,6 @@ set -e
 mkdir -p /odm/firmware
 ln -sf /system/etc/firmware/BCM43xx.hcd /odm/firmware/BCM4345C0.hcd
 echo "BT firmware ready."
+
+# enable bluez AutoEnable so freshly adopted adapters get powered
+sed -i 's/^#AutoEnable=true/AutoEnable=true/' /etc/bluetooth/main.conf
