@@ -173,3 +173,22 @@ WLAN works (scan + connect). Chain and fixes:
   nl80211 works fine once firmware is loaded. Placeholder MAC
   00:90:4c:11:22:33 means firmware not loaded; real MAC comes from
   the .cal.
+
+## App sandboxing (2026-07-25)
+
+Sandboxed apps (browser, camera, gallery, ...) failed to launch:
+firejail aborts with "clone: Invalid argument" (EINVAL) because the
+msm-4.4 kernel was built WITHOUT CONFIG_USER_NS (and likely other
+namespace/seccomp options mer-kernel-check wants). sailjail has no
+runtime disable switch (config Enabled=false in the default-profile
+section does not bypass the firejail wrapper).
+
+Workaround: systemd user drop-ins for booster-browser@ and
+booster-silica-media@ that drop the "sailjail --profile=%i" wrapper
+from ExecStart, launching the booster directly via invoker.
+=> apps run UNCONFINED. Acceptable for now; proper fix is a kernel
+rebuild with CONFIG_USER_NS/PID_NS/UTS_NS/IPC_NS/NET_NS/SECCOMP,
+after which these drop-ins should be removed.
+
+Also: /etc/login.defs needs GID_MIN (sparse shipped only UID_MIN),
+otherwise firejail warns "cannot read UID_MIN and/or GID_MIN".
