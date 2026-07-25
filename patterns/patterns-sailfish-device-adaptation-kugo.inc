@@ -12,7 +12,7 @@ Requires: libhybris-libGLESv2
 Requires: libhybris-libwayland-egl
 
 # Bluetooth
-Requires: bluebinder
+Requires: bluetooth-rfkill-event-hciattach
 
 # Telephony
 Requires: ofono-ril-binder-plugin

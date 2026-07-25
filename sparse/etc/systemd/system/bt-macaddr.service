@@ -1,0 +1,9 @@
+[Unit]
+Description=Derive BT MAC from WLAN MAC (kugo)
+Before=bluetooth-rfkill-event.service
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/droid/kugo-bt-macaddr.sh
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target
