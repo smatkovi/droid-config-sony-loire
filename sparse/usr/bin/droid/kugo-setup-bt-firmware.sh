@@ -28,3 +28,15 @@ fi
 # store repo requires credentials community ports lack; its auth
 # failure aborts every PackageKit refresh -> Storeman hangs
 ssu dr store 2>/dev/null
+
+# --- audio stack (needs ADSP online via kugo-dsp-boot.service) ---
+# HAL + policy configs live on oem (p39)
+mkdir -p /vendor/lib64/hw /vendor/etc
+cp -n /mnt/oem/lib64/hw/audio.primary.msm8952.so /vendor/lib64/hw/ 2>/dev/null
+cp -n /mnt/oem/lib64/hw/audio.primary.kugo.so /vendor/lib64/hw/ 2>/dev/null
+for f in /mnt/oem/etc/*audio*.xml /mnt/oem/etc/mixer_paths.xml; do
+    ln -sf "$f" /vendor/etc/
+done
+# hw_get_module needs the platform id (was empty -> no HAL ever found)
+grep -q "ro.board.platform" /usr/libexec/droid-hybris/system/build.prop 2>/dev/null || \
+    echo "ro.board.platform=msm8952" >> /usr/libexec/droid-hybris/system/build.prop

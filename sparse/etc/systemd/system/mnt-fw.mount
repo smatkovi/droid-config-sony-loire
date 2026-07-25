@@ -1,0 +1,12 @@
+[Unit]
+Description=DSP firmware partition (p24)
+Before=droid-hal-init.service
+
+[Mount]
+What=/dev/mmcblk0p24
+Where=/mnt/fw
+Type=vfat
+Options=ro
+
+[Install]
+WantedBy=local-fs.target

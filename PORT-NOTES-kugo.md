@@ -252,3 +252,23 @@ Storeman hing ewig in "refresh cache" + Segfault. Drei Ursachen:
    Segfault. Fix: mv + Symlink /var/cache/zypp -> /home/.zypp-cache.
 Ausserdem: libsailfishapp-launcher noetig fuer QML-harbour-Apps
 (liefert /usr/bin/sailfish-qml), jetzt im Pattern.
+
+### DSP-Boot-Kette + Audio-Wiederherstellung (25.07. spätabends)
+ROOT CAUSE Audio-Mysterium: venus/adsp/modem wurden NIE gebootet
+(alle OFFLINING ab Boot). Kernel-PIL braucht Userspace-Trigger
+(echo 1 > /sys/kernel/boot_adsp/boot, wie Stock-init) + Firmware
+von Partition p24 (modem, vfat, image/) via /odm/firmware.
+Der alte firmware-mount.service (5f9e319) war committet aber nie
+deployed (sparse wirkt erst nach RPM-Rebuild+Reinstall!) - daher
+ging Audio nach jedem Reboot verloren. Ersetzt durch getestete
+Kette: mnt-fw.mount (p24) + persist.mount (p36) + kugo-dsp-boot
+.service (fw-Symlinks, rmt_storage, adsp-Trigger).
+Soundcard (/dev/snd voll) entsteht in der Sekunde des ADSP-Boots.
+PA braucht zusaetzlich: audio.primary-HALs + Policy-XMLs von oem
+nach /vendor (Setup-Skript) + ro.board.platform=msm8952 + PA-
+(Re)start NACH ADSP-online (Reihenfolge-Polish offen).
+TODO: firmware_class/parameters/path=/firmware/image waere
+eleganter als Symlinks (Idee aus altem Service); dsp-Partition
+(by-name/dsp) existiert auch - pruefen was sie enthaelt.
+Sensoren: ADSP online, aber SNS-Dienste registrieren sich nicht
+am Router (kein 0x100er auf Node 5) - naechste Session.
