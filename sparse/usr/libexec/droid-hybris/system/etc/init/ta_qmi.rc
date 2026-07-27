@@ -1,0 +1,6 @@
+# Sony TA QMI bridge - serves TrimArea (factory calibration) to
+# QMI clients incl. ADSP sensor drivers. Needs tad socket first.
+service ta_qmi /mnt/oem/bin/ta_qmi_service
+    class core
+    user root
+    group root

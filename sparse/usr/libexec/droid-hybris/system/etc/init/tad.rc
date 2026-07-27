@@ -1,0 +1,5 @@
+service tad /mnt/oem/bin/tad_static /dev/block/mmcblk0 1,16
+    class core
+    user root
+    group root
+    socket tad stream 0660 system system

@@ -1,10 +1,6 @@
-KERNEL=="event*", MODE="0666"
-KERNEL=="kgsl-3d0", MODE="0666"
-KERNEL=="ion", MODE="0666"
-KERNEL=="fb0", MODE="0666"
-KERNEL=="pcmC*", MODE="0666"
-KERNEL=="controlC*", MODE="0666"
-KERNEL=="compr*", MODE="0666"
-KERNEL=="hwC*", MODE="0666"
 # sensors.qcom (user system) needs its device node
 KERNEL=="sensors", OWNER="system", GROUP="system", MODE="0660"
+# camera stack (mm-qcamera-daemon + HAL run as camera)
+KERNEL=="v4l-subdev*", OWNER="camera", GROUP="camera", MODE="0660"
+KERNEL=="media*", OWNER="camera", GROUP="camera", MODE="0660"
+KERNEL=="video*", OWNER="camera", GROUP="camera", MODE="0660"
