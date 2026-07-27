@@ -344,3 +344,20 @@ BusyBox: kein {}-Expand via scp, kein find -newermt; nach Crashes
 REFERENZEN: XA2/nile ohne Sonderconfig (Pakete/Config korrekt);
 LineageOS loire = 32bit-only+binderized ab Werk (unser Modell);
 10V-Thread 30978: gleiches Muster (Main-Sensor an Zusatz-HW).
+
+## NACHTRAG 27.07. vormittag: BOOT-FESTIGKEIT BEWIESEN + Props-Falle
+Frischer Boot ohne Handgriffe: camera-provider.rc startet Provider
+automatisch, minimedia verbindet remote (isRemote=1, ready with 2),
+BEIDE Kameras zeigen Bild. cashsvr noch manuell (rc fehlt - Todo).
+KRITISCHE LEHRE - PERSIST-PROPS: Lineage-Test-Props (persist.camera.
+eis.enable, dc.frame.sync, zsl.mode, HAL3.enabled=0 etc.) ueberlebten
+als /data/property-Dateien; "Loeschen" per setprop X "" ist WIRKUNGSLOS
+(leere Props bleiben gesetzt!). Nach Reboot lud der Property-Service
+die Leichen -> BEIDE Kameras: Gruenstich + Freeze nach 1. Frame +
+"Kamera antwortet nicht". FIX: rm /data/property/persist.camera.* +
+REBOOT (rm wirkt erst nach Neustart - in-memory-Werte bleiben bis
+dahin!). persist.vendor.camera.HAL3.enabled=1 bleibt der einzige
+gewollte Camera-Prop. Eimer C+D-Nebenbefunde: vendor-libqdutils MUSS
+stock bleiben (D revertiert, a0dc9e8-Revert im Repo); somc-provider@
+1.0-Link wiederhergestellt (nicht im Manifest, unkritisch);
+camera.qcom-Stock-Link korrekt auf /mnt/stock-system/vendor/lib/hw/.
