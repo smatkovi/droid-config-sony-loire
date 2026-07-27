@@ -314,3 +314,33 @@ Diensten (0x100 SMGR etc.), test_sensors "Got 41 sensors",
 sensorfwd startet (enabled), UI rotiert.
 boot_slpi bleibt wirkungslos auf kugo (kein slpi-Subsystem),
 schadet aber nicht - Sony-rc schreibt ihn auch.
+
+## KAMERA-MARATHON 26./27.07. - ENDSTAND
+BEIDE KAMERAS ZEIGEN LIVE-BILD (Front imx241 fluessig, Haupt imx300
+stotternd ~3s). Kette: CFI-frei (frameworks/av+flac+libvpx, patches/),
+32bit-minimedia (mediaserver-Stack in 8.1 32-only = XA2-Normalfall),
+binderized camera.provider@2.4-service (32bit, selbst gebaut, make
+baut _32 automatisch; hwbinder-Manifest, isRemote=1, camera-provider.rc
+class core), SW_binaries /mnt/oem (ro.odm 8.1.0_4.4_loire_v13) via
+odm/vendor-Links, camera.msm8952 aus Quellbaum, sat/sac/depth-Dummies,
+persist.vendor.camera.HAL3.enabled=1, qcamerasvr GEPARKT (video0!),
+cashsvr (vendor/oss/cash, 64bit ok) + tof_focus_calibration.xml aus
+oem (Werkskalibrierung, Korrelation 0.998), dconf jolla-camera-hw
+(f5121-Basis, Front real 2592x1944, VF 1280x960).
+OFFEN: (1) HEAP-KORRUPTION fluechtig (malloc unaligned fastbin,
+Abort bei vfsrc-STREAM_START, App-Prozess; gst-launch-Pfad crasht
+NICHT) = WURZEL-VERDACHT - ZUERST loesen; (2) Haupt-Stottern
+(getBuffer timeout 3000ms max_buffers 6; falsifiziert: maxAcquired
+32->4 [Patch bleibt, korrekt], Texture-Cache-no-ref [zurueckgerollt
+auf 0.1.4]); (3) Capture: HAL liefert Snapshot (ENCODER-Log), App
+speichert nicht (filesink location cap_%d Default; Raw-Preview-
+Callback TOT - NV21 verhandelt, 0 chain); (4) Sucher-Start 10-20s;
+(5) Provider-Binary + cashsvr in droid-hal paketieren, cashsvr.rc
+fehlt; (6) RGBC-XML existiert nirgends (loire wohl nur ToF).
+LEHREN: vendor-Namespace ab 8.1; glibc-Aborts NICHT im logcat
+(stderr!); rc 0644 root:root; timeout fehlt (coreutils in Pattern);
+BusyBox: kein {}-Expand via scp, kein find -newermt; nach Crashes
+2x minimedia-Zyklus; Home 777 blockiert sshd-Keys (chmod 755).
+REFERENZEN: XA2/nile ohne Sonderconfig (Pakete/Config korrekt);
+LineageOS loire = 32bit-only+binderized ab Werk (unser Modell);
+10V-Thread 30978: gleiches Muster (Main-Sensor an Zusatz-HW).
