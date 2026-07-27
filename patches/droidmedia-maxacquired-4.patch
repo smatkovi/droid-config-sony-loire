@@ -1,0 +1,44 @@
+diff --git a/meson.build b/meson.build
+index b39638c..bb421ad 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1,6 +1,8 @@
+ project(
+-  'droidmedia', ['c', 'cpp'],
++  'droidmedia',
++  ['c', 'cpp'],
+   default_options : ['warning_level=1', 'buildtype=debugoptimized'],
++version : '0.20260522.0+master.20260726150750.c76bd65'
+ )
+ 
+ droidmedia_version = meson.project_version()
+diff --git a/private.cpp b/private.cpp
+index e307b97..c34d522 100644
+--- a/private.cpp
++++ b/private.cpp
+@@ -81,7 +81,7 @@ _DroidMediaBufferQueue::_DroidMediaBufferQueue(const char *name) :
+   // Some devices require more than 2 buffers. Codec2 B-frames even more,
+   // since they come out of order and gst-droid holds all the frames until the oldest one becomes available.
+   // However, MAX_MAX_ACQUIRED_BUFFERS doesn't work either.
+-  auto maxAcquiredBuffers = android::BufferQueue::NUM_BUFFER_SLOTS / 2;
++  auto maxAcquiredBuffers = 4 /* kugo: camera HAL max_buffers=6; B-frame value 32 starves it */;
+   auto err = m_queue->setMaxAcquiredBufferCount(maxAcquiredBuffers);
+   if (err != android::OK) {
+       ALOGE("Failed to set %d maxAcquiredBufferCount, falling back to 4. Error 0x%x", maxAcquiredBuffers, -err);
+diff --git a/rpm/droidmedia.spec b/rpm/droidmedia.spec
+index 2d7e77f..5273af3 100644
+--- a/rpm/droidmedia.spec
++++ b/rpm/droidmedia.spec
+@@ -27,9 +27,9 @@ Summary:       Android media wrapper library
+ Version:       0.20170214.0
+ Release:       1
+ License:       ASL 2.0
+-BuildRequires: ubu-trusty
+-BuildRequires: sudo-for-abuild
+-BuildRequires: droid-bin-src-full
++#BuildRequires: ubu-trusty
++#BuildRequires: sudo-for-abuild
++#BuildRequires: droid-bin-src-full
+ Source0:       %{name}-%{version}.tgz
+ AutoReqProv:   no
+ 
