@@ -361,3 +361,20 @@ gewollte Camera-Prop. Eimer C+D-Nebenbefunde: vendor-libqdutils MUSS
 stock bleiben (D revertiert, a0dc9e8-Revert im Repo); somc-provider@
 1.0-Link wiederhergestellt (nicht im Manifest, unkritisch);
 camera.qcom-Stock-Link korrekt auf /mnt/stock-system/vendor/lib/hw/.
+
+## VIDEOAUFNAHME GELOEST 28.07.! 
+Kette der Fixes: (1) Encoder-Stack materialisiert (libOmxCore/Venc/
+stagefrighthw/c2dcolorconvert + soft-Encoder nach $D/lib, 32bit),
+(2) schlanke media_codecs.xml + media_profiles nach /vendor/etc+/etc
+(Stock-VOLLKATALOG haengt minimedia32!), (3) dconf video/VF beide
+1280x720 (16:9-Match), (4) DER SCHLUESSEL: droidmedia-Patch - 
+Recording-BufferQueue-Guards ANDROID_MAJOR >=9 -> >=8 
+(droidmediacamera.cpp 514/542 + private.cpp attachToCameraVideo;
+setVideoTarget existiert in 8.1!). Symptom davor: "startRecordingL:
+No valid recording window", 0-Byte-MP4s. Branch kugo-video-8x in
+external/droidmedia, Upstream-PR-Kandidat!
+WICHTIG: Nach Lib-Tausch IMMER booster-silica-media restart + App-Kill.
+Offen: malloc-Abort beim App-Schliessen (h264parse/encodebin PLAYING
+-dispose - der bekannte Heap-Verdacht), Haupt-Kamera-Stottern.
+NEUE THEMEN: Lade-Screen im Aus-Zustand + Power-off-Alarm = beides
+ACT_DEAD-Modus (dsme/mce/charging-UI) - naechstes Kapitel.
