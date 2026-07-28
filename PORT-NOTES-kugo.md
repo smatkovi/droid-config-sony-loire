@@ -388,3 +388,13 @@ vulkan.freedreno) waere bereit. Einordnung: eigenes Projekt
 Naechster Waydroid-Zug: SwiftShader-Libs (arm64, 13er-ABI, aus
 GSI/Emulator) in overlay/system/lib64/egl + egl=swiftshader -
 gleiche bewiesene Overlay-Technik, keine Kernel-Aenderung.
+### DRM/freedreno-Befund 28.07. (Experiment beendet)
+CAF-4.4 hat drm/msm MIT a5xx_gpu.c + SDE-Stack, bindet an
+"qcom,kgsl-3d0". ABER: nicht modulfaehig (multiple init_module in
+sde_wb/dsi_display -> nur =y moeglich), =y aktiviert SDE-Display
+neben mdss -> lipstick-Risiko. Container-mesa (libgallium_dri,
+vulkan.freedreno) waere bereit. Einordnung: eigenes Projekt
+(Makefile-Trennung sde/gpu noetig), NICHT quick-win.
+Naechster Waydroid-Zug: SwiftShader-Libs (arm64, 13er-ABI, aus
+GSI/Emulator) in overlay/system/lib64/egl + egl=swiftshader -
+gleiche bewiesene Overlay-Technik, keine Kernel-Aenderung.
