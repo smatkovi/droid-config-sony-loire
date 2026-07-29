@@ -1,0 +1,12 @@
+[Unit]
+Description=Modem firmware partition (p24) for RFS access
+Before=droid-hal-init.service
+
+[Mount]
+What=/dev/mmcblk0p24
+Where=/firmware
+Type=vfat
+Options=ro,nofail
+
+[Install]
+WantedBy=local-fs.target
