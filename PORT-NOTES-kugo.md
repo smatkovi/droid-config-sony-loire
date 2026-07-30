@@ -398,3 +398,74 @@ vulkan.freedreno) waere bereit. Einordnung: eigenes Projekt
 Naechster Waydroid-Zug: SwiftShader-Libs (arm64, 13er-ABI, aus
 GSI/Emulator) in overlay/system/lib64/egl + egl=swiftshader -
 gleiche bewiesene Overlay-Technik, keine Kernel-Aenderung.
+### 29./30.07. MODEM + BLUETOOTH
+
+MODEM - GEFUNDENE LUECKEN (alle behoben, Muster: Pfade die der
+Android-Stack erwartet und die im hybris-Layout ins Leere zeigen):
+1. /dev/socket/qmux_{radio,audio,bluetooth,gps,nfc} + netmgr fehlten
+   -> qmuxd konnte keine Sockets anlegen (ENOENT). tmpfiles-Regel +
+   mkdir-Block in radio-kugo.rc. Eigentuemer differenziert (Vorbild
+   SODP init.common.rc:270ff): qmux_audio=media:audio,
+   _bluetooth=bluetooth:bluetooth, _gps=gps:gps, _radio=radio:radio.
+2. /vendor/etc/data/{qmi,netmgr,dsi}_config.xml fehlten -> qmuxd
+   "all ports disabled fuer target [Eldarion]". Aus /mnt/stock-system
+   kopiert - GEHOEREN IN proprietary-files!
+3. Radio-Properties aus Stock build.prop fehlten: ro.use_data_netmgrd,
+   persist.radio.{lw_enabled,apm_sim_not_pwdn,block_allow_data}.
+4. qcril.db: libril erwartet /odm/radio/qcril_database/qcril.db.
+   Symlink auf /mnt/oem reicht NICHT (ro, sqlite braucht rw) -> Kopie.
+5. /data/misc/radio gehoerte system:radio -> sqlite CANTOPEN(14).
+   chown radio:radio. Plus /vendor/qcril_database/upgrade anlegen.
+6. use_qmuxd im Eldarion(MSM8976)-Block der qmi_config.xml auf 0:
+   Firmware unterstuetzt SHIM-LAYER ueber IPC Router. Danach
+   "qmuxd: Shim layer supported by modem, closing client fd".
+7. libril-Master-Port-Patch (4 Byte, 0x2ed8a8): mov w8,#0x80 ->
+   #0xffff. qmi_ril_client_get_port_for_legacy_targets() fragt
+   Feature 0x05 nie ab, ro.baseband=msm fiel in Default-Zweig mit
+   QMUX-Port 128. Mit QMI_CLIENT_INSTANCE_ANY loest die Bibliothek
+   die Dienste ueber IPC Router auf. -> ofono hat /ril_0, Powered
+   und Online true, VoiceCallManager + SimManager.
+8. /odm/lib64 fehlte (Linker suchte dort) -> Symlink auf /mnt/oem/lib64.
+
+SMD-ERKENNTNIS: Modem allociert NIE DATA5_CNTL (smdcntl0). Auf
+APPS<->MDMSW nur DS, IPCRTR (beidseitig OPENED), SSM_RTR_MODEM_APPS.
+Device-Tree korrekt (msm8956.dtsi:2149), open_timeout=20s aendert nur
+-ENODEV zu -ETIMEDOUT. Kein Fehler: QMI laeuft ueber IPC Router,
+qmuxd ist auf dieser Firmware obsolet.
+
+SIM - HARDWARE-VERDACHT (Diagnose via AT-Kanal!):
+/dev/smd7, smd8, smd11 antworten auf AT-Kommandos - hervorragendes
+Diagnosewerkzeug, unabhaengig von rild/QMI.
+  AT+CPIN?        -> +CME ERROR: SIM not inserted
+  AT$QCSIMSTAT?   -> 0,UNKNOWN
+  AT$QCSIMAPP?    -> 0,"SUB1","No Service"  (Slot konfiguriert!)
+  AT+CRSM=176,... -> keine Antwort (kein Kartenkontakt)
+  AT+CGSN         -> IMEI 352631083965547 (intakt)
+Modem laeuft, kalibriert, 28 QMI-Dienste - nur UIM (0x0b) fehlt, weil
+keine Karte kontaktiert wird. NV-Reset (modemst1/2 mit 0xFF, Backup in
+/home/defaultuser/modem-backup/) aenderte nichts. Karte funktioniert im
+Xperia 10 V => Slot mechanisch defekt oder Modem-SIM-Interface.
+WICHTIG: rild setzt CFUN auf 0 und laesst Funk aus. AT+CFUN=1 greift
+nur wenn rild gestoppt ist. Auch bei CFUN:1 keine Karte.
+
+BLUETOOTH: Kein HAL-Dienst - /vendor/bin/hw/android.hardware.
+bluetooth@1.0-service existiert, aber keine rc-Definition. Vorlage:
+hardware/interfaces/bluetooth/1.0/default/*.rc (VTS-Bloecke kuerzen).
+bluebinder_wait.sh hat KEINE Abbruchbedingung (while true) und die Unit
+Restart=always + TimeoutStartSec=60 -> Endlosschleife mit ~6 Prozess-
+starts/Sekunde. Erzeugt Dauerlast UND lipstick-DBus-Ueberlauf
+("maximum number of pending replies reached") -> Sailjail-Apps und
+Kamera starten nicht mehr. Fix bis HAL laeuft: systemctl mask
+bluebinder. Betrifft auch pdx235! Kandidat fuer Upstream-Bugreport.
+
+FALLEN:
+- init ueberspringt rc-Dateien mit group-write ("Skipping insecure
+  file") -> immer chmod 644.
+- /odm/firmware enthaelt MATERIALISIERTE Symlinks (BCM43xx.hcd usw.),
+  weil sailjail /mnt versteckt. NICHT neu anlegen - Inhalt erhalten!
+- /system/etc/init und /usr/libexec/droid-hybris/system/etc/init sind
+  getrennte Kopien, beide werden geparst (Duplikat-Warnungen normal).
+- androidboot.keymaster=1 fehlt in BOARD_KERNEL_CMDLINE. Setzt
+  qseecom.is_apps_region_protected -> ueberspringt keymaster-Laden aus
+  dem FS (scheitert sonst mit scm_call ret -2, falsche Image-Version).
+  Betrifft nur vold/Keystore/Fingerprint, nicht Telefonie.
