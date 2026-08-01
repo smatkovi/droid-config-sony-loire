@@ -1,3 +1,7 @@
+%global __requires_exclude_from ^/usr/libexec/droid-hybris/.*$
+%global __provides_exclude_from ^/usr/libexec/droid-hybris/.*$
+
+
 %define device kugo
 %define rpm_device kugo
 %define device_pretty Xperia X Compact

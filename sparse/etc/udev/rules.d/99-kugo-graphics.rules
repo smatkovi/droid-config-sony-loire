@@ -1,0 +1,2 @@
+KERNEL=="ion", MODE="0666"
+KERNEL=="kgsl-3d0", MODE="0666"

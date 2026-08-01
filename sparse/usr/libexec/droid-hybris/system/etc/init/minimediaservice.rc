@@ -1,5 +1,0 @@
-service minimedia /usr/libexec/droid-hybris/system/bin/minimediaservice32
-    class main
-    user media
-    group audio camera
-    ioprio rt 4

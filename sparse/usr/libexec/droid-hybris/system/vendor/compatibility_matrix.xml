@@ -1,0 +1,5 @@
+<compatibility-matrix version="1.0" type="device">
+    <sepolicy>
+        <sepolicy-version>0.0</sepolicy-version>
+    </sepolicy>
+</compatibility-matrix>
