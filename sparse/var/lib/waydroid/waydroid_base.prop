@@ -1,0 +1,2 @@
+ro.hardware.gralloc=kugo
+persist.waydroid.no_background_subsurface=true
