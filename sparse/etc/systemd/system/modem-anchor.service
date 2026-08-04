@@ -1,0 +1,13 @@
+[Unit]
+Description=Hold modem subsystem online for QMI
+After=firmware-modem.service local-fs.target
+
+[Service]
+Type=simple
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 30); do [ -e /dev/subsys_modem ] && exit 0; sleep 1; done; exit 1'
+ExecStart=/bin/sh -c 'exec sleep infinity < /dev/subsys_modem'
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

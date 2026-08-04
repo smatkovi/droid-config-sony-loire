@@ -1,0 +1,17 @@
+on early-init
+    mkdir /dev/socket/qmux_radio 0770 radio radio
+    chmod 2770 /dev/socket/qmux_radio
+    mkdir /dev/socket/qmux_audio 0770 media audio
+    chmod 2770 /dev/socket/qmux_audio
+    mkdir /dev/socket/qmux_bluetooth 0770 bluetooth bluetooth
+    chmod 2770 /dev/socket/qmux_bluetooth
+    mkdir /dev/socket/qmux_gps 0770 gps gps
+    chmod 2770 /dev/socket/qmux_gps
+    mkdir /dev/socket/qmux_nfc 0770 radio nfc
+    chmod 2770 /dev/socket/qmux_nfc
+    mkdir /dev/socket/netmgr 0750 radio radio
+    mkdir /data/vendor/radio 0771 system radio
+    mkdir /data/misc/radio 0771 system radio
+
+on property:ro.boot.baseband=msm
+    enable qmuxd

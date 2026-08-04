@@ -1,0 +1,6 @@
+on early-init
+    setprop ro.use_data_netmgrd true
+    setprop persist.radio.lw_enabled true
+    setprop persist.radio.apm_sim_not_pwdn 1
+    setprop persist.radio.block_allow_data 1
+    setprop persist.radio.adb_log_on 1

@@ -1,0 +1,16 @@
+[Unit]
+Description=Mount modem firmware partition
+DefaultDependencies=no
+Before=droid-hal-init.service
+After=local-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/bin/mkdir -p /firmware
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 20); do [ -b /dev/mmcblk0p24 ] && exit 0; sleep 0.5; done; exit 1'
+ExecStart=/bin/mount -t vfat -o ro,shortname=lower,uid=1000,gid=1000,dmask=227,fmask=337 /dev/mmcblk0p24 /firmware
+ExecStartPost=/bin/sh -c 'echo -n /firmware/image > /sys/module/firmware_class/parameters/path'
+
+[Install]
+WantedBy=multi-user.target

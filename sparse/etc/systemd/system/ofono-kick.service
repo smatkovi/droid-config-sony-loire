@@ -1,0 +1,10 @@
+[Unit]
+Description=Kick ofono once modem is fully up
+After=ofono.service modem-anchor.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'for i in $(seq 1 40); do [ "$(getprop init.svc.ril-daemon)" = running ] && [ "$(cat /sys/bus/msm_subsys/devices/subsys2/state)" = ONLINE ] && break; sleep 1; done; sleep 8; systemctl restart ofono'
+
+[Install]
+WantedBy=multi-user.target
