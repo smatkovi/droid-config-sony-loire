@@ -17,20 +17,12 @@ on post-fs-data
     chmod 660 /dev/sensors
 
 # Sensor service
+# class core + no 'disabled': the stock property triggers
+# (ro.crypto.state etc.) never fire on SFOS, leaving the
+# service dead. Start it unconditionally instead.
 service sensors /odm/bin/sensors.qcom
-    class late_start
+    class core
     user system
-    group system
-    disabled
-
-# Start the service for unecrypted devices
-on property:ro.crypto.state=unencrypted
-    enable sensors
-
-# Enable the service for FBE devices
-on property:ro.crypto.type=file
-    enable sensors
-
-# Start the service for FDE devices
-on property:vold.decrypt=trigger_post_fs_data
-    start sensors
+    group system diag
+    capabilities NET_RAW NET_BIND_SERVICE
+    socket sensor_ctl_socket stream 0666 system system
