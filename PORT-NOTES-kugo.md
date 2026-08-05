@@ -469,3 +469,35 @@ FALLEN:
   qseecom.is_apps_region_protected -> ueberspringt keymaster-Laden aus
   dem FS (scheitert sonst mit scm_call ret -2, falsche Image-Version).
   Betrifft nur vold/Keystore/Fingerprint, nicht Telefonie.
+
+## 05.08. SENSOREN + KAMERA-RESTAURIERUNG (nach rootfs-Verlust)
+SENSOREN GELOEST: sensors.rc fehlte socket-Zeile
+(socket sensor_ctl_socket stream 0666 system system) -> HAL
+RETRY_OPEN, leere Liste, sensorfwd tot. Fix im Repo (4381ba6).
+Einmalig rm /data/misc/sensors/sns.reg + Reboot noetig.
+irsc/sec_config lief diesmal von allein (kein permission fail).
+Accel+Kompass verifiziert (messwerk).
+KAMERA RESTAURIERT (Fotos OK): Marathon-Zutaten hatten teils
+ueberlebt (minimedia32, provider32, cashsvr, dconf). Fehlte:
+(a) persist.vendor.camera.HAL3.enabled=1 (war weg - wieder setzen!),
+(b) tote /mnt/stock-system-Symlinks in /vendor/lib (32bit!) -
+19 Libs aus out/system/(vendor/)lib materialisiert (hidl*, hwbinder,
+graphics-Interfaces, libmmjpeg_interface, qomx_core, qservice,
+qdMetaData, memalloc, drm(utils)), android.hidl.base@1.0-Link
+entfernt (baut nicht in 8.1, niemand needed sie direkt),
+(c) libxml2+libicuuc+libicui18n 32bit (mm_camera_load_shim_lib),
+(d) mapper@2.0-impl + allocator@2.0-impl 32bit nach beiden
+vendor/lib/hw (Links tot -> "gralloc-mapper must be in passthrough
+mode"-SIGABRT in minimedia C3Dev-ReqQueue, riss Provider mit),
+(e) gralloc.msm8952.so nach droid-hybris/system/lib/hw (heilt
+gralloc.kugo/msm8952-Links), (f) libgrallocutils.so 32bit nach
+/vendor/lib + droid-hybris system/lib + system/vendor/lib.
+LEHRE BESTAETIGT: /mnt/stock-system ist NICHT gemountet - alle
+Symlinks dorthin sind Attrappen; materialisieren statt linken.
+Booster-Regel gilt: nach Lib-Tausch booster-silica-media killen.
+Crash-Rezept: Doppel-Zyklus (provider+minimedia, 8s, minimedia, 8s).
+VIDEO WIEDER OFFEN: droidmedia-0.20260522-Neubau ohne
+kugo-video-8x-Patch (BufferQueue-Guards >=9 -> >=8) - Branch in
+external/droidmedia pruefen und droidmedia daraus neu bauen.
+TODO PAKETIERUNG: alle obigen Libs + HAL3-Prop + provider/cashsvr
+in droid-hal/droid-config giessen (Punkt 5 alt, jetzt dringend).
