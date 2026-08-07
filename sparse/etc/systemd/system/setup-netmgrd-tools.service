@@ -1,0 +1,9 @@
+[Unit]
+Description=Provide netmgrd wrapper tools in /system/bin (kugo mobile data)
+After=local-fs.target
+Before=ofono.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/setup-netmgrd-tools.sh
+[Install]
+WantedBy=multi-user.target
