@@ -1,0 +1,10 @@
+[Unit]
+Description=Qualcomm GNSS HIDL service (kugo)
+After=droid-hal-init.service
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/start-gnss-hal.sh
+Restart=on-failure
+RestartSec=5
+[Install]
+WantedBy=multi-user.target
