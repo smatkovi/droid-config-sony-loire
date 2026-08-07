@@ -1,0 +1,9 @@
+#!/bin/sh
+# callvol [0-5] - main/call volume without hardware keys (kugo volume keys need a stylus)
+# Uses PA mainvolume2 DBus API on PA's own socket; scale follows active context (call/media).
+STEP=${1:-5}
+exec dbus-send --print-reply \
+  --address=unix:path=/run/user/100000/pulse/dbus-socket \
+  --dest=org.PulseAudio1 /com/meego/mainvolume2 \
+  org.freedesktop.DBus.Properties.Set \
+  string:com.Meego.MainVolume2 string:CurrentStep variant:uint32:$STEP
