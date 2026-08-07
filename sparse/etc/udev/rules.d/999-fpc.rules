@@ -1,0 +1,2 @@
+KERNEL=="fingerprint", OWNER="system", GROUP="system", MODE="0660"
+KERNEL=="qseecom", OWNER="system", GROUP="drmrpc", MODE="0660"

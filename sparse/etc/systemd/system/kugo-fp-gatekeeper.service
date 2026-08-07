@@ -1,0 +1,13 @@
+[Unit]
+Description=Android gatekeeper HAL (kugo)
+After=kugo-fp-prepare.service
+Requires=kugo-fp-prepare.service
+Before=kugo-fp-hal.service sailfish-fpd.service
+
+[Service]
+ExecStart=/usr/libexec/droid-hybris/system/bin/android.hardware.gatekeeper@1.0-service
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

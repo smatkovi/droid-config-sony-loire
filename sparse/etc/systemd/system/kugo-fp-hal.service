@@ -1,0 +1,16 @@
+[Unit]
+Description=Android fingerprint HAL (kugo)
+After=kugo-fp-gatekeeper.service
+Requires=kugo-fp-gatekeeper.service
+Before=sailfish-fpd.service
+
+[Service]
+User=system
+Group=system
+SupplementaryGroups=input drmrpc
+ExecStart=/usr/libexec/droid-hybris/system/bin/android.hardware.biometrics.fingerprint@2.1-service.sony
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

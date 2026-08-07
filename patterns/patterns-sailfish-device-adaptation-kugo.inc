@@ -64,7 +64,9 @@ Requires: usb-moded
 Requires: rfkill
 
 # enable device lock and allow to select untrusted software
-Requires: jolla-devicelock-daemon-encsfa
+# fingerprint (FPC1145): devicelock backend with fpd support
+Requires: sailfish-devicelock-fpd
+Requires: sailfish-fpd-slave-binder
 
 # For GPS
 Requires: geoclue-provider-hybris

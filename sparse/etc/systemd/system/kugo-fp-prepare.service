@@ -1,0 +1,17 @@
+[Unit]
+Description=Prepare fingerprint stack (perms, TZ listeners, keymaster)
+After=droid-hal-init.service
+Requires=droid-hal-init.service
+Before=kugo-fp-gatekeeper.service kugo-fp-hal.service sailfish-fpd.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'chown system:drmrpc /dev/qseecom; chmod 660 /dev/qseecom; chown system:system /dev/fingerprint'
+ExecStart=/usr/bin/setprop sys.keymaster.loaded true
+ExecStart=/bin/sh -c 'for p in $(pgrep qseecomd); do ls -l /proc/$p/fd 2>/dev/null | grep -q qseecom && exit 0; done; /usr/bin/setprop ctl.restart qseecomd; sleep 5'
+ExecStart=/usr/bin/setprop ctl.start keymaster-3-0
+ExecStart=/bin/sleep 2
+
+[Install]
+WantedBy=multi-user.target
