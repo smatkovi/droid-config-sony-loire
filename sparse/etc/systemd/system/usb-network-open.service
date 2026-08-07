@@ -1,0 +1,8 @@
+[Unit]
+Description=Allow inbound traffic on USB developer mode network (kugo)
+After=connman.service usb-moded.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/usb-network-open.sh
+[Install]
+WantedBy=multi-user.target
