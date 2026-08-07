@@ -1,0 +1,12 @@
+[Unit]
+Description=Android HIDL allocator service (stock)
+After=droid-hal-init.service
+Requires=droid-hal-init.service
+
+[Service]
+ExecStart=/mnt/stock-system/bin/hw/android.hidl.allocator@1.0-service
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
