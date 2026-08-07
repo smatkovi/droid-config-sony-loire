@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<audio_platform_info>
+    <pcm_ids>
+        <usecase name="USECASE_VOICEMMODE1_CALL" type="in" id="35"/>
+        <usecase name="USECASE_VOICEMMODE1_CALL" type="out" id="35"/>
+        <usecase name="USECASE_VOICEMMODE2_CALL" type="in" id="36"/>
+        <usecase name="USECASE_VOICEMMODE2_CALL" type="out" id="36"/>
+    </pcm_ids>
+</audio_platform_info>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<MediaCodecs>
+    <Settings>
+        <Setting name="max-video-encoder-input-buffers" value="9" />
+    </Settings>
+    <Encoders>
+        <MediaCodec name="OMX.qcom.video.encoder.avc" type="video/avc">
+            <Quirk name="requires-allocate-on-input-ports" />
+            <Quirk name="requires-allocate-on-output-ports" />
+            <Quirk name="requires-loaded-to-idle-after-allocation" />
+            <Limit name="size" min="96x96" max="1920x1088" />
+            <Limit name="alignment" value="2x2" />
+            <Limit name="block-size" value="16x16" />
+            <Limit name="blocks-per-second" min="36" max="244800" />
+            <Limit name="bitrate" range="1-20000000" />
+            <Limit name="frame-rate" range="1-30" />
+            <Limit name="concurrent-instances" max="8" />
+        </MediaCodec>
+        <MediaCodec name="OMX.google.aac.encoder" type="audio/mp4a-latm">
+            <Limit name="channel-count" max="6" />
+            <Limit name="sample-rate" ranges="8000,11025,12000,16000,22050,24000,32000,44100,48000" />
+            <Limit name="bitrate" range="8000-960000" />
+        </MediaCodec>
+    </Encoders>
+    <Decoders>
+        <MediaCodec name="OMX.qcom.video.decoder.avc" type="video/avc">
+            <Quirk name="requires-allocate-on-input-ports" />
+            <Quirk name="requires-allocate-on-output-ports" />
+            <Limit name="size" min="64x64" max="1920x1088" />
+            <Limit name="alignment" value="2x2" />
+            <Limit name="block-size" value="16x16" />
+            <Limit name="blocks-per-second" min="1" max="244800" />
+            <Limit name="bitrate" range="1-20000000" />
+            <Limit name="concurrent-instances" max="8" />
+        </MediaCodec>
+        <MediaCodec name="OMX.google.aac.decoder" type="audio/mp4a-latm">
+            <Limit name="channel-count" max="8" />
+            <Limit name="sample-rate" ranges="7350,8000,11025,12000,16000,22050,24000,32000,44100,48000" />
+            <Limit name="bitrate" range="8000-960000" />
+        </MediaCodec>
+    </Decoders>
+    <Include href="media_codecs_google_audio.xml" />
+    <Include href="media_codecs_google_video.xml" />
+</MediaCodecs>

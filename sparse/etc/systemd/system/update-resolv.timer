@@ -1,0 +1,7 @@
+[Unit]
+Description=Refresh resolv.conf from connman
+[Timer]
+OnBootSec=25
+OnUnitActiveSec=20
+[Install]
+WantedBy=timers.target
