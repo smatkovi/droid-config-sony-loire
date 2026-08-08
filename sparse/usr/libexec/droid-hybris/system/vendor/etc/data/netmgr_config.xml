@@ -5,9 +5,9 @@
   <!-- Logging overrides for ds_exec() family of commands -->
   <!-- Remove the 'disabled_' from the properties to enable them -->
   <listitem name = "cmd_logging_config">
-    <data name="disabled_log_options" type="int"> 255 </data>
+    <data name="log_options" type="int"> 255 </data>
     <data name="disabled_cmd_debug" type="int"> 1 </data>
-    <data name="disabled_outfile" type="string"> /data/netmgr_cmd_log.txt </data>
+    <data name="outfile" type="string"> /data/netmgr_cmd_log.txt </data>
   </listitem>
 
    <!-- Legacy MSM targets -->
@@ -182,7 +182,7 @@
       <data name="qmi_dpm_enabled" type="int"> 0 </data>
       <data name="wda_data_format_enabled" type="int"> 1 </data>
 
-      <data name="single_qmux_ch_enabled" type="int"> 1 </data>
+      <data name="single_qmux_ch_enabled" type="int"> 0 </data>
       <data name="single_qmux_ch_conn_id_str" type="string"> rmnet0 </data>
       <data name="single_qmux_ch_name" type="string"> DATA5_CNTL </data>
       <data name="tc_ul_baserate" type="int"> 0 </data>
