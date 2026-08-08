@@ -1,0 +1,52 @@
+diff --git a/Android.mk b/Android.mk
+index 2239116..f43a066 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -62,6 +62,7 @@ endif
+ 
+ LOCAL_SHARED_LIBRARIES := \
+     android.hardware.biometrics.fingerprint@2.1 \
++    android.hardware.gatekeeper@1.0 \
+     libcutils \
+     libdl \
+     libhardware \
+diff --git a/service.cpp b/service.cpp
+index b035805..2589ee1 100644
+--- a/service.cpp
++++ b/service.cpp
+@@ -22,11 +22,14 @@
+ #include "egistec/current/BiometricsFingerprint.h"
+ #include "egistec/legacy/BiometricsFingerprint.h"
+ #include "egistec/legacy/EGISAPTrustlet.h"
++#include "Gatekeeper.h"
+ 
+ using android::NO_ERROR;
+ using android::sp;
+ using android::status_t;
+ using android::hardware::configureRpcThreadpool;
++using android::hardware::gatekeeper::V1_0::IGatekeeper;
++using android::hardware::gatekeeper::V1_0::implementation::Gatekeeper;
+ using android::hardware::joinRpcThreadpool;
+ using android::hardware::biometrics::fingerprint::V2_1::IBiometricsFingerprint;
+ 
+@@ -78,7 +81,8 @@ int main() {
+     bio = new FPCHAL();
+ #endif
+ 
+-    configureRpcThreadpool(1, true /*callerWillJoin*/);
++    configureRpcThreadpool(4, true /*callerWillJoin*/);
++
+ 
+     if (bio != nullptr) {
+         status_t status = bio->registerAsService();
+@@ -91,6 +95,10 @@ int main() {
+         return 1;
+     }
+ 
++
++    android::sp<IGatekeeper> gk = new Gatekeeper();
++    if (gk->registerAsService("default") != android::OK) ALOGE("gatekeeper piggyback failed");
++    else ALOGI("gatekeeper piggyback registered");
+     joinRpcThreadpool();
+ 
+     return 0;  // should never get here

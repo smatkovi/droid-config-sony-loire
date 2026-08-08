@@ -1,0 +1,35 @@
+diff --git a/QCamera2/HAL/QCameraParameters.cpp b/QCamera2/HAL/QCameraParameters.cpp
+index e9d7e3c9..478ccf15 100644
+--- a/QCamera2/HAL/QCameraParameters.cpp
++++ b/QCamera2/HAL/QCameraParameters.cpp
+@@ -5906,6 +5906,30 @@ int32_t QCameraParameters::initDefaultParameters()
+         LOGW("supported preview sizes cnt is 0 or exceeds max!!!");
+     }
+ 
++    // kugo: backend reports only a bogus low-res video size table
++    // (352x288,320x240,176x144,160x120). If no entry is at least 640
++    // wide, replace the table with the (healthy) preview sizes table.
++    {
++        bool videoTblUsable = false;
++        for (size_t i = 0; i < m_pCapability->video_sizes_tbl_cnt; ++i) {
++            if (m_pCapability->video_sizes_tbl[i].width >= 640) {
++                videoTblUsable = true;
++                break;
++            }
++        }
++        if (!videoTblUsable &&
++                m_pCapability->preview_sizes_tbl_cnt > 0 &&
++                m_pCapability->preview_sizes_tbl_cnt <= MAX_SIZES_CNT) {
++            LOGW("video sizes table looks bogus, using preview sizes table");
++            for (size_t i = 0; i < m_pCapability->preview_sizes_tbl_cnt; ++i) {
++                m_pCapability->video_sizes_tbl[i] =
++                        m_pCapability->preview_sizes_tbl[i];
++            }
++            m_pCapability->video_sizes_tbl_cnt =
++                    m_pCapability->preview_sizes_tbl_cnt;
++        }
++    }
++
+     // Set supported video sizes
+     if (m_pCapability->video_sizes_tbl_cnt > 0 &&
+         m_pCapability->video_sizes_tbl_cnt <= MAX_SIZES_CNT) {

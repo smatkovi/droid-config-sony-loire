@@ -1,0 +1,732 @@
+diff --git a/media/libmedia/Android.bp b/media/libmedia/Android.bp
+index a462f3a8f..34927bcd7 100644
+--- a/media/libmedia/Android.bp
++++ b/media/libmedia/Android.bp
+@@ -114,9 +114,9 @@ cc_defaults {
+             "unsigned-integer-overflow",
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+@@ -233,9 +233,9 @@ cc_library_shared {
+             "unsigned-integer-overflow",
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+diff --git a/media/libmediametrics/Android.bp b/media/libmediametrics/Android.bp
+index 15dac59f8..ce0266e46 100644
+--- a/media/libmediametrics/Android.bp
++++ b/media/libmediametrics/Android.bp
+@@ -28,9 +28,9 @@ cc_library_shared {
+             "unsigned-integer-overflow",
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+diff --git a/media/libstagefright/Android.bp b/media/libstagefright/Android.bp
+index c8d4e4aaa..67d6c8c2f 100644
+--- a/media/libstagefright/Android.bp
++++ b/media/libstagefright/Android.bp
+@@ -149,13 +149,13 @@ cc_library_shared {
+     },
+ 
+     sanitize: {
+-        cfi: true,
++        cfi: false,
+         misc_undefined: [
+             "unsigned-integer-overflow",
+             "signed-integer-overflow",
+         ],
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+diff --git a/media/libstagefright/codecs/aacdec/Android.bp b/media/libstagefright/codecs/aacdec/Android.bp
+index 21c00a1bb..1a52f56f8 100644
+--- a/media/libstagefright/codecs/aacdec/Android.bp
++++ b/media/libstagefright/codecs/aacdec/Android.bp
+@@ -22,9 +22,9 @@ cc_library_shared {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/codecs/aacenc/Android.bp b/media/libstagefright/codecs/aacenc/Android.bp
+index fb368c236..2ea2f6084 100644
+--- a/media/libstagefright/codecs/aacenc/Android.bp
++++ b/media/libstagefright/codecs/aacenc/Android.bp
+@@ -131,9 +131,9 @@ cc_library_shared {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/codecs/amrwbenc/Android.bp b/media/libstagefright/codecs/amrwbenc/Android.bp
+index 89689917c..be5fdf1e8 100644
+--- a/media/libstagefright/codecs/amrwbenc/Android.bp
++++ b/media/libstagefright/codecs/amrwbenc/Android.bp
+@@ -133,9 +133,9 @@ cc_library_static {
+ 
+     cflags: ["-Werror"],
+     sanitize: {
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+@@ -163,9 +163,9 @@ cc_library_shared {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/codecs/amrwbenc/SampleCode/Android.bp b/media/libstagefright/codecs/amrwbenc/SampleCode/Android.bp
+index d52fed389..d547326f6 100644
+--- a/media/libstagefright/codecs/amrwbenc/SampleCode/Android.bp
++++ b/media/libstagefright/codecs/amrwbenc/SampleCode/Android.bp
+@@ -20,9 +20,9 @@ cc_test {
+     ],
+ 
+     sanitize: {
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+diff --git a/media/libstagefright/codecs/avcdec/Android.bp b/media/libstagefright/codecs/avcdec/Android.bp
+index 1f438038d..48481c502 100644
+--- a/media/libstagefright/codecs/avcdec/Android.bp
++++ b/media/libstagefright/codecs/avcdec/Android.bp
+@@ -27,9 +27,9 @@ cc_library_shared {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/codecs/avcenc/Android.bp b/media/libstagefright/codecs/avcenc/Android.bp
+index 66507a7da..7f2ab6efe 100644
+--- a/media/libstagefright/codecs/avcenc/Android.bp
++++ b/media/libstagefright/codecs/avcenc/Android.bp
+@@ -27,9 +27,9 @@ cc_library_shared {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/codecs/flac/dec/Android.bp b/media/libstagefright/codecs/flac/dec/Android.bp
+index 595cfdbe9..015fbe010 100644
+--- a/media/libstagefright/codecs/flac/dec/Android.bp
++++ b/media/libstagefright/codecs/flac/dec/Android.bp
+@@ -23,9 +23,9 @@ cc_library_shared {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/codecs/flac/enc/Android.bp b/media/libstagefright/codecs/flac/enc/Android.bp
+index 066917b25..337b57515 100644
+--- a/media/libstagefright/codecs/flac/enc/Android.bp
++++ b/media/libstagefright/codecs/flac/enc/Android.bp
+@@ -15,9 +15,9 @@ cc_library_shared {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/codecs/g711/dec/Android.bp b/media/libstagefright/codecs/g711/dec/Android.bp
+index fff72a8b5..99fe32376 100644
+--- a/media/libstagefright/codecs/g711/dec/Android.bp
++++ b/media/libstagefright/codecs/g711/dec/Android.bp
+@@ -26,9 +26,9 @@ cc_library_shared {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+     compile_multilib: "32",
+diff --git a/media/libstagefright/codecs/gsm/dec/Android.bp b/media/libstagefright/codecs/gsm/dec/Android.bp
+index 753eeefee..24233a8c9 100644
+--- a/media/libstagefright/codecs/gsm/dec/Android.bp
++++ b/media/libstagefright/codecs/gsm/dec/Android.bp
+@@ -20,9 +20,9 @@ cc_library_shared {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/codecs/hevcdec/Android.bp b/media/libstagefright/codecs/hevcdec/Android.bp
+index 7fa74d460..b39068e0c 100644
+--- a/media/libstagefright/codecs/hevcdec/Android.bp
++++ b/media/libstagefright/codecs/hevcdec/Android.bp
+@@ -19,9 +19,9 @@ cc_library_shared {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/codecs/m4v_h263/dec/Android.bp b/media/libstagefright/codecs/m4v_h263/dec/Android.bp
+index 1216ae530..9547aef8a 100644
+--- a/media/libstagefright/codecs/m4v_h263/dec/Android.bp
++++ b/media/libstagefright/codecs/m4v_h263/dec/Android.bp
+@@ -57,9 +57,9 @@ cc_library_static {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+@@ -104,9 +104,9 @@ cc_library_shared {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+     compile_multilib: "32",
+diff --git a/media/libstagefright/codecs/m4v_h263/enc/Android.bp b/media/libstagefright/codecs/m4v_h263/enc/Android.bp
+index 640718dd6..ab5b928dd 100644
+--- a/media/libstagefright/codecs/m4v_h263/enc/Android.bp
++++ b/media/libstagefright/codecs/m4v_h263/enc/Android.bp
+@@ -42,9 +42,9 @@ cc_library_static {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+@@ -90,9 +90,9 @@ cc_library_shared {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+     compile_multilib: "32",
+@@ -118,9 +118,9 @@ cc_test {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/codecs/mp3dec/Android.bp b/media/libstagefright/codecs/mp3dec/Android.bp
+index 273fa31a3..dc5dc3059 100644
+--- a/media/libstagefright/codecs/mp3dec/Android.bp
++++ b/media/libstagefright/codecs/mp3dec/Android.bp
+@@ -58,9 +58,9 @@ cc_library_static {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+@@ -100,9 +100,9 @@ cc_library_shared {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+@@ -137,9 +137,9 @@ cc_test {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/codecs/mpeg2dec/Android.bp b/media/libstagefright/codecs/mpeg2dec/Android.bp
+index 15fdde7cb..0428cbc9c 100644
+--- a/media/libstagefright/codecs/mpeg2dec/Android.bp
++++ b/media/libstagefright/codecs/mpeg2dec/Android.bp
+@@ -29,9 +29,9 @@ cc_library_shared {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+     compile_multilib: "32",
+diff --git a/media/libstagefright/codecs/on2/dec/Android.bp b/media/libstagefright/codecs/on2/dec/Android.bp
+index 59c1f5de8..2e00f87b9 100644
+--- a/media/libstagefright/codecs/on2/dec/Android.bp
++++ b/media/libstagefright/codecs/on2/dec/Android.bp
+@@ -29,9 +29,9 @@ cc_library_shared {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+     compile_multilib: "32",
+diff --git a/media/libstagefright/codecs/on2/enc/Android.bp b/media/libstagefright/codecs/on2/enc/Android.bp
+index 741774c65..1e4b5c6a8 100644
+--- a/media/libstagefright/codecs/on2/enc/Android.bp
++++ b/media/libstagefright/codecs/on2/enc/Android.bp
+@@ -21,9 +21,9 @@ cc_library_shared {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/codecs/on2/h264dec/Android.bp b/media/libstagefright/codecs/on2/h264dec/Android.bp
+index 95c20757d..3e081e0dc 100644
+--- a/media/libstagefright/codecs/on2/h264dec/Android.bp
++++ b/media/libstagefright/codecs/on2/h264dec/Android.bp
+@@ -107,9 +107,9 @@ cc_library_shared {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/codecs/opus/dec/Android.bp b/media/libstagefright/codecs/opus/dec/Android.bp
+index 88d6ec4f9..506b875dd 100644
+--- a/media/libstagefright/codecs/opus/dec/Android.bp
++++ b/media/libstagefright/codecs/opus/dec/Android.bp
+@@ -28,9 +28,9 @@ cc_library_shared {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+     compile_multilib: "32",
+diff --git a/media/libstagefright/codecs/raw/Android.bp b/media/libstagefright/codecs/raw/Android.bp
+index f21d46fa1..7cc91e319 100644
+--- a/media/libstagefright/codecs/raw/Android.bp
++++ b/media/libstagefright/codecs/raw/Android.bp
+@@ -19,9 +19,9 @@ cc_library_shared {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/colorconversion/Android.bp b/media/libstagefright/colorconversion/Android.bp
+index 16e9ded0e..e7e0f9b1b 100644
+--- a/media/libstagefright/colorconversion/Android.bp
++++ b/media/libstagefright/colorconversion/Android.bp
+@@ -23,9 +23,9 @@ cc_library_static {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+diff --git a/media/libstagefright/filters/Android.bp b/media/libstagefright/filters/Android.bp
+index e94422447..4a3bb8aab 100644
+--- a/media/libstagefright/filters/Android.bp
++++ b/media/libstagefright/filters/Android.bp
+@@ -30,9 +30,9 @@ cc_library_static {
+     ],
+ 
+     sanitize: {
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+diff --git a/media/libstagefright/flac/dec/Android.bp b/media/libstagefright/flac/dec/Android.bp
+index 1b9fe0ffd..f3ca7210f 100644
+--- a/media/libstagefright/flac/dec/Android.bp
++++ b/media/libstagefright/flac/dec/Android.bp
+@@ -21,9 +21,9 @@ cc_library_shared {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/foundation/Android.bp b/media/libstagefright/foundation/Android.bp
+index 221af1d07..6d71c736f 100644
+--- a/media/libstagefright/foundation/Android.bp
++++ b/media/libstagefright/foundation/Android.bp
+@@ -85,9 +85,9 @@ cc_library_shared {
+             "unsigned-integer-overflow",
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+diff --git a/media/libstagefright/http/Android.bp b/media/libstagefright/http/Android.bp
+index 5d90b0abb..402d61056 100644
+--- a/media/libstagefright/http/Android.bp
++++ b/media/libstagefright/http/Android.bp
+@@ -29,9 +29,9 @@ cc_library_shared {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/httplive/Android.bp b/media/libstagefright/httplive/Android.bp
+index e41533440..e24266aa1 100644
+--- a/media/libstagefright/httplive/Android.bp
++++ b/media/libstagefright/httplive/Android.bp
+@@ -24,9 +24,9 @@ cc_library_shared {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/id3/Android.bp b/media/libstagefright/id3/Android.bp
+index 30008d97c..00eceb7ef 100644
+--- a/media/libstagefright/id3/Android.bp
++++ b/media/libstagefright/id3/Android.bp
+@@ -11,9 +11,9 @@ cc_library_static {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+@@ -44,9 +44,9 @@ cc_test {
+     static_libs: ["libstagefright_id3"],
+ 
+     sanitize: {
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/matroska/Android.bp b/media/libstagefright/matroska/Android.bp
+index ec2fb4b77..ec6c37c7c 100644
+--- a/media/libstagefright/matroska/Android.bp
++++ b/media/libstagefright/matroska/Android.bp
+@@ -22,9 +22,9 @@ cc_library_static {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/mpeg2ts/Android.bp b/media/libstagefright/mpeg2ts/Android.bp
+index 21259c477..84408efc0 100644
+--- a/media/libstagefright/mpeg2ts/Android.bp
++++ b/media/libstagefright/mpeg2ts/Android.bp
+@@ -26,9 +26,9 @@ cc_library_static {
+             "unsigned-integer-overflow",
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/omx/Android.bp b/media/libstagefright/omx/Android.bp
+index d4cdf693a..2e22001f1 100644
+--- a/media/libstagefright/omx/Android.bp
++++ b/media/libstagefright/omx/Android.bp
+@@ -84,9 +84,9 @@ cc_library_shared {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+@@ -119,9 +119,9 @@ cc_library_shared {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+diff --git a/media/libstagefright/rtsp/Android.bp b/media/libstagefright/rtsp/Android.bp
+index debd07e2a..e649973dc 100644
+--- a/media/libstagefright/rtsp/Android.bp
++++ b/media/libstagefright/rtsp/Android.bp
+@@ -45,9 +45,9 @@ cc_library_static {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+@@ -88,9 +88,9 @@ cc_test {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+diff --git a/media/libstagefright/timedtext/Android.bp b/media/libstagefright/timedtext/Android.bp
+index a5ad6c60b..4c14649c2 100644
+--- a/media/libstagefright/timedtext/Android.bp
++++ b/media/libstagefright/timedtext/Android.bp
+@@ -13,9 +13,9 @@ cc_library_static {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/webm/Android.bp b/media/libstagefright/webm/Android.bp
+index f96878895..6cc21ebef 100644
+--- a/media/libstagefright/webm/Android.bp
++++ b/media/libstagefright/webm/Android.bp
+@@ -13,9 +13,9 @@ cc_library_static {
+             "signed-integer-overflow",
+             "unsigned-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 
+diff --git a/media/libstagefright/wifi-display/Android.bp b/media/libstagefright/wifi-display/Android.bp
+index fb08c5b07..f77a460c6 100644
+--- a/media/libstagefright/wifi-display/Android.bp
++++ b/media/libstagefright/wifi-display/Android.bp
+@@ -43,9 +43,9 @@ cc_library_shared {
+         misc_undefined: [
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
+diff --git a/media/libstagefright/xmlparser/Android.bp b/media/libstagefright/xmlparser/Android.bp
+index 35072841f..8c05bae2b 100644
+--- a/media/libstagefright/xmlparser/Android.bp
++++ b/media/libstagefright/xmlparser/Android.bp
+@@ -34,9 +34,9 @@ cc_library_shared {
+             "unsigned-integer-overflow",
+             "signed-integer-overflow",
+         ],
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ 

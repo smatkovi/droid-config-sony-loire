@@ -1,0 +1,16 @@
+diff --git a/libFLAC/Android.bp b/libFLAC/Android.bp
+index eb6198c..5e7a03b 100644
+--- a/libFLAC/Android.bp
++++ b/libFLAC/Android.bp
+@@ -50,9 +50,9 @@ cc_library_static {
+     },
+ 
+     sanitize: {
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }

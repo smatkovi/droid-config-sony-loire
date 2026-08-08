@@ -1,0 +1,48 @@
+diff --git a/Android.bp b/Android.bp
+index ad834eb..835d035 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -2147,9 +2147,9 @@ cc_library_static {
+     export_include_dirs: ["libvpx"],
+ 
+     sanitize: {
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+         blacklist: "cfi_blacklist.txt",
+     },
+diff --git a/Android.bp.in b/Android.bp.in
+index ac6a464..aebfdf9 100644
+--- a/Android.bp.in
++++ b/Android.bp.in
+@@ -89,9 +89,9 @@ cc_library_static {
+     export_include_dirs: ["libvpx"],
+ 
+     sanitize: {
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+         blacklist: "cfi_blacklist.txt",
+     },
+diff --git a/libwebm/Android.bp b/libwebm/Android.bp
+index a1d335e..6b60183 100644
+--- a/libwebm/Android.bp
++++ b/libwebm/Android.bp
+@@ -3,9 +3,9 @@ cc_library_static {
+     srcs: ["mkvparser/mkvparser.cc"],
+     export_include_dirs: ["."],
+     sanitize: {
+-        cfi: true,
++        cfi: false,
+         diag: {
+-            cfi: true,
++            cfi: false,
+         },
+     },
+ }
