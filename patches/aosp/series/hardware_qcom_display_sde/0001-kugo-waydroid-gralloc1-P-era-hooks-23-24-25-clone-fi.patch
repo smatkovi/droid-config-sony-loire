@@ -1,0 +1,157 @@
+From f62eb585b5fb47bbd4f3869c37814a0b80346549 Mon Sep 17 00:00:00 2001
+From: sm <sebstianmatkovich@gmail.com>
+Date: Sun, 2 Aug 2026 09:25:17 +0200
+Subject: [PATCH] kugo/waydroid: gralloc1 P-era hooks (23/24/25 clone-first),
+ tail padding for NumInts=25, diagnostics
+
+- gr_device_impl: GetFunction cases 23/24/25 for Android 10 mapper@2.1
+  clients (validateBufferSize/getTransportSize/importBuffer via RetainBuffer)
+- gr_priv_handle.h: explicit tail padding so NumInts=25 matches the
+  host build ABI under #pragma pack(4) -- fixes 'invalid native handle'
+  at wlegl import (proven via disassembly: cmp #0x18 vs #0x19)
+- gr_ion_alloc: ION_IOC_IMPORT failure probe
+- build: USE_COLOR_METADATA unconditional, include path for color_metadata.h
+---
+ common.mk                   |  1 +
+ gralloc1/Android.mk         |  1 +
+ gralloc1/gr_buf_mgr.cpp     |  1 +
+ gralloc1/gr_device_impl.cpp | 34 ++++++++++++++++++++++++++++++++++
+ gralloc1/gr_device_impl.h   |  2 +-
+ gralloc1/gr_ion_alloc.cpp   |  3 +++
+ gralloc1/gr_priv_handle.h   |  1 +
+ 7 files changed, 42 insertions(+), 1 deletion(-)
+
+diff --git a/common.mk b/common.mk
+index 62486bb7..df738bb0 100644
+--- a/common.mk
++++ b/common.mk
+@@ -93,3 +93,4 @@ ifeq ($(TARGET_COMPILE_WITH_MSM_KERNEL),true)
+     common_deps += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+     kernel_includes += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
+ endif
++common_flags += -DUSE_COLOR_METADATA
+diff --git a/gralloc1/Android.mk b/gralloc1/Android.mk
+index 3176aee3..4328ea5f 100644
+--- a/gralloc1/Android.mk
++++ b/gralloc1/Android.mk
+@@ -8,6 +8,7 @@ LOCAL_VENDOR_MODULE           := true
+ LOCAL_MODULE_RELATIVE_PATH    := hw
+ LOCAL_MODULE_TAGS             := optional
+ LOCAL_C_INCLUDES              := $(common_includes) \
++                                 $(LOCAL_PATH)/../include \
+                                  external/libcxx/include/
+ 
+ LOCAL_HEADER_LIBRARIES        := display_headers
+diff --git a/gralloc1/gr_buf_mgr.cpp b/gralloc1/gr_buf_mgr.cpp
+index 9d32cd6b..0758232a 100644
+--- a/gralloc1/gr_buf_mgr.cpp
++++ b/gralloc1/gr_buf_mgr.cpp
+@@ -29,6 +29,7 @@
+ #include "gr_buf_descriptor.h"
+ #include "gr_utils.h"
+ #include "gr_buf_mgr.h"
++#include <color_metadata.h>
+ #include "qdMetaData.h"
+ 
+ namespace gralloc1 {
+diff --git a/gralloc1/gr_device_impl.cpp b/gralloc1/gr_device_impl.cpp
+index 7a3c16db..f87434c2 100644
+--- a/gralloc1/gr_device_impl.cpp
++++ b/gralloc1/gr_device_impl.cpp
+@@ -113,6 +113,34 @@ void GrallocImpl::GetCapabilities(struct gralloc1_device *device, uint32_t *out_
+   return;
+ }
+ 
++// --- P-era gralloc1 functions (23/24/25) for A10 mapper@2.1 clients (kugo/waydroid) ---
++static int32_t Gr1ValidateBufferSize(gralloc1_device_t* /*device*/, buffer_handle_t buffer,
++    const void* /*descriptor_info*/, uint32_t /*stride*/) {
++  return buffer ? GRALLOC1_ERROR_NONE : GRALLOC1_ERROR_BAD_HANDLE;
++}
++static int32_t Gr1GetTransportSize(gralloc1_device_t* /*device*/, buffer_handle_t buffer,
++    uint32_t* out_num_fds, uint32_t* out_num_ints) {
++  if (!buffer) return GRALLOC1_ERROR_BAD_HANDLE;
++  if (out_num_fds) *out_num_fds = static_cast<uint32_t>(buffer->numFds);
++  if (out_num_ints) *out_num_ints = static_cast<uint32_t>(buffer->numInts);
++  return GRALLOC1_ERROR_NONE;
++}
++static int32_t Gr1ImportBuffer(gralloc1_device_t* device, const buffer_handle_t raw_handle,
++    buffer_handle_t* out_buffer) {
++  if (!raw_handle || !out_buffer) return GRALLOC1_ERROR_BAD_HANDLE;
++  // parcel memory is read-only: clone into writable heap, then register
++  native_handle_t* cloned = native_handle_clone(raw_handle);
++  if (!cloned) return GRALLOC1_ERROR_NO_RESOURCES;
++  int32_t err = GrallocImpl::RetainBuffer(device, static_cast<buffer_handle_t>(cloned));
++  if (err != GRALLOC1_ERROR_NONE) {
++    native_handle_close(cloned);
++    native_handle_delete(cloned);
++    return err;
++  }
++  *out_buffer = static_cast<buffer_handle_t>(cloned);
++  return GRALLOC1_ERROR_NONE;
++}
++
+ gralloc1_function_pointer_t GrallocImpl::GetFunction(gralloc1_device_t *device, int32_t function) {
+   if (!device) {
+     return NULL;
+@@ -165,6 +193,12 @@ gralloc1_function_pointer_t GrallocImpl::GetFunction(gralloc1_device_t *device,
+       return reinterpret_cast<gralloc1_function_pointer_t>(UnlockBuffer);
+     case GRALLOC1_FUNCTION_PERFORM:
+       return reinterpret_cast<gralloc1_function_pointer_t>(Gralloc1Perform);
++    case 23:  // GRALLOC1_FUNCTION_VALIDATE_BUFFER_SIZE (P)
++      return reinterpret_cast<gralloc1_function_pointer_t>(Gr1ValidateBufferSize);
++    case 24:  // GRALLOC1_FUNCTION_GET_TRANSPORT_SIZE (P)
++      return reinterpret_cast<gralloc1_function_pointer_t>(Gr1GetTransportSize);
++    case 25:  // GRALLOC1_FUNCTION_IMPORT_BUFFER (P)
++      return reinterpret_cast<gralloc1_function_pointer_t>(Gr1ImportBuffer);
+     default:
+       ALOGE("%s:Gralloc Error. Client Requested for unsupported function", __FUNCTION__);
+       return NULL;
+diff --git a/gralloc1/gr_device_impl.h b/gralloc1/gr_device_impl.h
+index 55ce44b3..ed9d9f99 100644
+--- a/gralloc1/gr_device_impl.h
++++ b/gralloc1/gr_device_impl.h
+@@ -59,7 +59,7 @@ class GrallocImpl : public gralloc1_device_t {
+     }
+   }
+ 
+- private:
++ public:
+   static inline gralloc1_error_t Dump(gralloc1_device_t *device, uint32_t *out_size,
+                                       char *out_buffer);
+   static inline gralloc1_error_t CheckDeviceAndHandle(gralloc1_device_t *device,
+diff --git a/gralloc1/gr_ion_alloc.cpp b/gralloc1/gr_ion_alloc.cpp
+index 680a516a..286617d4 100644
+--- a/gralloc1/gr_ion_alloc.cpp
++++ b/gralloc1/gr_ion_alloc.cpp
+@@ -29,6 +29,7 @@
+ 
+ #define DEBUG 0
+ #define ATRACE_TAG (ATRACE_TAG_GRAPHICS | ATRACE_TAG_HAL)
++#include <stdio.h>
+ #include <string.h>
+ #include <sys/ioctl.h>
+ #include <sys/mman.h>
+@@ -148,6 +149,8 @@ int IonAlloc::ImportBuffer(int fd) {
+   if (ioctl(ion_dev_fd_, INT(ION_IOC_IMPORT), &fd_data)) {
+     err = -errno;
+     ALOGE("%s: ION_IOC_IMPORT failed with error - %s", __FUNCTION__, strerror(errno));
++    fprintf(stderr, "[hostgralloc] ION_IOC_IMPORT FAILED errno=%d (%s) ion_dev_fd=%d import_fd=%d\n",
++            errno, strerror(errno), ion_dev_fd_, fd);
+     return err;
+   }
+   return fd_data.handle;
+diff --git a/gralloc1/gr_priv_handle.h b/gralloc1/gr_priv_handle.h
+index e4b521c9..81d87c37 100644
+--- a/gralloc1/gr_priv_handle.h
++++ b/gralloc1/gr_priv_handle.h
+@@ -93,6 +93,7 @@ struct private_handle_t {
+   gralloc1_producer_usage_t producer_usage __attribute__((aligned(8)));
+   gralloc1_consumer_usage_t consumer_usage __attribute__((aligned(8)));
+   unsigned int layer_count;
++  unsigned int reserved_tail_pad;  // kugo: match host build tail padding (NumInts 25)
+ #ifdef __cplusplus
+   static const int kNumFds = 2;
+   static const int kMagic = 'gmsm';
+-- 
+2.54.0
+

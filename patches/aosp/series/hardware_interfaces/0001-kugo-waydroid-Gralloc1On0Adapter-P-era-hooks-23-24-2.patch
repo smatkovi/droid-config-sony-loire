@@ -1,0 +1,118 @@
+From 53409e4f99205c75b2c7e7361730af7f4103c669 Mon Sep 17 00:00:00 2001
+From: sm <sebstianmatkovich@gmail.com>
+Date: Sun, 2 Aug 2026 09:23:41 +0200
+Subject: [PATCH] kugo/waydroid: Gralloc1On0Adapter P-era hooks (23/24/25
+ clone-first, 4096 perform bridge)
+
+Change-Id: Ia5e50d775286368f8c8f65e844709a4d36720d6b
+---
+ .../2.0/default/Gralloc1On0Adapter.cpp        | 59 ++++++++++++++++++-
+ .../2.0/default/Gralloc1On0Adapter.h          |  2 +-
+ 2 files changed, 57 insertions(+), 4 deletions(-)
+
+diff --git a/graphics/allocator/2.0/default/Gralloc1On0Adapter.cpp b/graphics/allocator/2.0/default/Gralloc1On0Adapter.cpp
+index 041ce777..2df613cb 100644
+--- a/graphics/allocator/2.0/default/Gralloc1On0Adapter.cpp
++++ b/graphics/allocator/2.0/default/Gralloc1On0Adapter.cpp
+@@ -81,13 +81,66 @@ void Gralloc1On0Adapter::doGetCapabilities(uint32_t* outCount,
+     *outCount = 0;
+ }
+ 
++namespace {
++// P-era functions the 8.1 adapter lacks (needed by mapper@2.1 in A10 containers)
++int32_t validateBufferSizeHook(gralloc1_device_t*, buffer_handle_t buffer,
++        const void* /*descriptorInfo*/, uint32_t /*stride*/) {
++    return buffer ? GRALLOC1_ERROR_NONE : GRALLOC1_ERROR_BAD_HANDLE;
++}
++int32_t getTransportSizeHook(gralloc1_device_t*, buffer_handle_t buffer,
++        uint32_t* outNumFds, uint32_t* outNumInts) {
++    if (!buffer) return GRALLOC1_ERROR_BAD_HANDLE;
++    if (outNumFds) *outNumFds = static_cast<uint32_t>(buffer->numFds);
++    if (outNumInts) *outNumInts = static_cast<uint32_t>(buffer->numInts);
++    return GRALLOC1_ERROR_NONE;
++}
++extern "C" int gralloc_perform_v(struct gralloc_module_t const* module,
++        int operation, va_list args);
++
++int32_t performHook(gralloc1_device_t* device, int operation, ...) {
++    auto adapter = android::hardware::Gralloc1On0Adapter::getAdapter(device);
++    if (!adapter) return -EINVAL;
++    va_list args;
++    va_start(args, operation);
++    int res = gralloc_perform_v(adapter->mModule, operation, args);
++    va_end(args);
++    return res;
++}
++
++int32_t importBufferHook(gralloc1_device_t* device, const buffer_handle_t rawHandle,
++        buffer_handle_t* outBuffer) {
++    if (!rawHandle || !outBuffer) return GRALLOC1_ERROR_BAD_HANDLE;
++    // IMPORT_BUFFER(25): parcel memory is read-only - clone into writable
++    // heap first (gralloc_map writes hnd->base), then register the clone.
++    native_handle_t* cloned = native_handle_clone(rawHandle);
++    if (!cloned) return GRALLOC1_ERROR_NO_RESOURCES;
++    int32_t err = Gralloc1On0Adapter::retainHook(device,
++            static_cast<buffer_handle_t>(cloned));
++    if (err != GRALLOC1_ERROR_NONE) {
++        native_handle_close(cloned);
++        native_handle_delete(cloned);
++        return err;
++    }
++    *outBuffer = static_cast<buffer_handle_t>(cloned);
++    return GRALLOC1_ERROR_NONE;
++}
++} // namespace
++
+ gralloc1_function_pointer_t Gralloc1On0Adapter::doGetFunction(
+         int32_t intDescriptor)
+ {
+     constexpr auto lastDescriptor =
+             static_cast<int32_t>(GRALLOC1_LAST_FUNCTION);
++    if (intDescriptor == 23) // GRALLOC1_FUNCTION_VALIDATE_BUFFER_SIZE (P)
++        return reinterpret_cast<gralloc1_function_pointer_t>(validateBufferSizeHook);
++    if (intDescriptor == 24) // GRALLOC1_FUNCTION_GET_TRANSPORT_SIZE (P)
++        return reinterpret_cast<gralloc1_function_pointer_t>(getTransportSizeHook);
++    if (intDescriptor == 25) // GRALLOC1_FUNCTION_IMPORT_BUFFER (P)
++        return reinterpret_cast<gralloc1_function_pointer_t>(importBufferHook);
++    if (intDescriptor == 4096) // GRALLOC1_FUNCTION_PERFORM (QC private)
++        return reinterpret_cast<gralloc1_function_pointer_t>(performHook);
+     if (intDescriptor < 0 || intDescriptor > lastDescriptor) {
+-        ALOGE("Invalid function descriptor");
++        ALOGE("Invalid function descriptor %d", intDescriptor);
+         return nullptr;
+     }
+ 
+@@ -158,7 +211,7 @@ gralloc1_function_pointer_t Gralloc1On0Adapter::doGetFunction(
+         case GRALLOC1_FUNCTION_UNLOCK:
+             return asFP<GRALLOC1_PFN_UNLOCK>(unlockHook);
+         case GRALLOC1_FUNCTION_INVALID:
+-            ALOGE("Invalid function descriptor");
++            ALOGE("Invalid function descriptor %d", intDescriptor);
+             return nullptr;
+     }
+ 
+@@ -288,7 +341,7 @@ int32_t Gralloc1On0Adapter::allocateHook(gralloc1_device* device,
+         return GRALLOC1_ERROR_UNDEFINED;
+     }
+ 
+-    auto adapter = getAdapter(device);
++    auto adapter = Gralloc1On0Adapter::getAdapter(device);
+ 
+     gralloc1_error_t error = GRALLOC1_ERROR_NONE;
+     uint32_t i;
+diff --git a/graphics/allocator/2.0/default/Gralloc1On0Adapter.h b/graphics/allocator/2.0/default/Gralloc1On0Adapter.h
+index 180015de..fa71e92e 100644
+--- a/graphics/allocator/2.0/default/Gralloc1On0Adapter.h
++++ b/graphics/allocator/2.0/default/Gralloc1On0Adapter.h
+@@ -43,7 +43,7 @@ public:
+         return static_cast<gralloc1_device_t*>(this);
+     }
+ 
+-private:
++public:
+     static inline Gralloc1On0Adapter* getAdapter(gralloc1_device_t* device) {
+         return static_cast<Gralloc1On0Adapter*>(device);
+     }
+-- 
+2.54.0
+

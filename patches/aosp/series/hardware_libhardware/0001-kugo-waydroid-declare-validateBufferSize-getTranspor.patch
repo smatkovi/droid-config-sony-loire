@@ -1,0 +1,36 @@
+From fa325b199a3780ae4cf8fbafda85bdb4ab6d7614 Mon Sep 17 00:00:00 2001
+From: sm <sebstianmatkovich@gmail.com>
+Date: Sun, 2 Aug 2026 09:23:42 +0200
+Subject: [PATCH] kugo/waydroid: declare validateBufferSize/getTransportSize in
+ gralloc0 module struct (reserved_proc 3->1)
+
+---
+ include/hardware/gralloc.h | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/include/hardware/gralloc.h b/include/hardware/gralloc.h
+index 5dafea0..5c111e3 100644
+--- a/include/hardware/gralloc.h
++++ b/include/hardware/gralloc.h
+@@ -312,7 +312,17 @@ typedef struct gralloc_module_t {
+             struct android_ycbcr *ycbcr, int fenceFd);
+ 
+     /* reserved for future use */
+-    void* reserved_proc[3];
++    int32_t (*validateBufferSize)(
++            struct gralloc_module_t const* device, buffer_handle_t handle,
++            uint32_t w, uint32_t h, int32_t format, int usage,
++            uint32_t stride);
++
++    int32_t (*getTransportSize)(
++            struct gralloc_module_t const* device, buffer_handle_t handle,
++            uint32_t *outNumFds, uint32_t *outNumInts);
++
++    /* reserved for future use */
++    void* reserved_proc[1];
+ } gralloc_module_t;
+ 
+ /*****************************************************************************/
+-- 
+2.54.0
+

@@ -1,0 +1,89 @@
+From cdf4fe0397f75be4f0c2fae106a743d4af454995 Mon Sep 17 00:00:00 2001
+From: sm <sebstianmatkovich@gmail.com>
+Date: Sun, 2 Aug 2026 09:23:39 +0200
+Subject: [PATCH] kugo/waydroid: gralloc1 P-era functions (23/24/25), tail
+ padding for NumInts=25, perform va_list split
+
+- sde/gralloc1: add validateBufferSize/getTransportSize/importBuffer hooks
+  (clone-first import via RetainBuffer) for Android 10 mapper@2.1 clients
+- gr_priv_handle.h: explicit tail padding field so NumInts=25 matches
+  the host (July full-build) ABI regardless of compiler padding under
+  #pragma pack(4) -- fixes 'invalid native handle' at wlegl import
+- msm8996: split gralloc_perform into extern-C gralloc_perform_v(va_list)
+  + wrapper; adapter perform bridge (fn 4096)
+- build fixes: USE_COLOR_METADATA, include paths, header export hygiene
+---
+ msm8996/common.mk             |  5 +++--
+ msm8996/libgralloc/mapper.cpp | 16 +++++++++++-----
+ sde                           |  1 +
+ 3 files changed, 15 insertions(+), 7 deletions(-)
+ create mode 160000 sde
+
+diff --git a/msm8996/common.mk b/msm8996/common.mk
+index 1dd17eb4..524701dc 100644
+--- a/msm8996/common.mk
++++ b/msm8996/common.mk
+@@ -17,8 +17,8 @@ common_header_export_path := qcom/display
+ common_libs := liblog libutils libcutils libhardware
+ 
+ #Common C flags
+-common_flags := -DDEBUG_CALC_FPS -Wno-missing-field-initializers
+-common_flags += -Wconversion -Wall -Werror
++common_flags :=  -Wno-missing-field-initializers
++common_flags += -Wconversion -Wall
+ ifeq ($(TARGET_IS_HEADLESS), true)
+     LOCAL_CLANG := false
+ else
+@@ -69,3 +69,4 @@ ifeq ($(TARGET_COMPILE_WITH_MSM_KERNEL),true)
+     common_deps += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+     kernel_includes += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
+ endif
++common_flags += -DVENUS_COLOR_FORMAT
+diff --git a/msm8996/libgralloc/mapper.cpp b/msm8996/libgralloc/mapper.cpp
+index 77e761d2..e086578b 100644
+--- a/msm8996/libgralloc/mapper.cpp
++++ b/msm8996/libgralloc/mapper.cpp
+@@ -363,15 +363,12 @@ static void ycbcr_to_flexible_layout(const struct android_ycbcr* ycbcr,
+     layout->planes[2].v_increment = (int32_t)ycbcr->cstride;
+ }
+ 
+-int gralloc_perform(struct gralloc_module_t const* module,
+-                    int operation, ... )
++extern "C" int gralloc_perform_v(struct gralloc_module_t const* module,
++                    int operation, va_list args)
+ {
+     int res = -EINVAL;
+-    va_list args;
+     if(!module)
+         return res;
+-
+-    va_start(args, operation);
+     switch (operation) {
+         case GRALLOC_MODULE_PERFORM_CREATE_HANDLE_FROM_BUFFER:
+             {
+@@ -655,6 +652,15 @@ int gralloc_perform(struct gralloc_module_t const* module,
+         default:
+             break;
+     }
++    return res;
++}
++
++int gralloc_perform(struct gralloc_module_t const* module,
++                    int operation, ... )
++{
++    va_list args;
++    va_start(args, operation);
++    int res = gralloc_perform_v(module, operation, args);
+     va_end(args);
+     return res;
+ }
+diff --git a/sde b/sde
+new file mode 160000
+index 00000000..f62eb585
+--- /dev/null
++++ b/sde
+@@ -0,0 +1 @@
++Subproject commit f62eb585b5fb47bbd4f3869c37814a0b80346549
+-- 
+2.54.0
+
