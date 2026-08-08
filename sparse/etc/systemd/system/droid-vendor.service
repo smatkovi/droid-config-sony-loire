@@ -1,14 +1,13 @@
 [Unit]
-Description=Vendor setup: oem to /mnt/oem + bind droid-hybris vendor to /vendor
+Description=Vendor setup: /vendor -> droid-hybris vendor (oem+stock mounts ready)
 DefaultDependencies=no
-RequiresMountsFor=/mnt
-After=mnt.mount
+Wants=mnt-oem.mount mnt-stock\x2dsystem.mount
+After=mnt-oem.mount mnt-stock\x2dsystem.mount
 Before=droid-hal-init.service local-fs.target
 ConditionPathExists=/usr/libexec/droid-hybris/system/vendor/bin/vndservicemanager
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/bin/sh -c 'mkdir -p /mnt/oem; mountpoint -q /mnt/oem || /usr/bin/mount -t ext4 -o ro /dev/mmcblk0p39 /mnt/oem'
-ExecStart=/usr/bin/mount --bind /usr/libexec/droid-hybris/system/vendor /vendor
+ExecStart=/usr/bin/sh -c 'mountpoint -q /vendor && umount /vendor; [ -L /vendor ] && exit 0; if rmdir /vendor 2>/dev/null; then ln -sfn /usr/libexec/droid-hybris/system/vendor /vendor; else mount --bind /usr/libexec/droid-hybris/system/vendor /vendor; fi'
 [Install]
 WantedBy=local-fs.target

@@ -1,0 +1,10 @@
+[Unit]
+Description=Stock Sony system partition (ro, media/camera blobs)
+Before=droid-hal-init.service
+[Mount]
+What=/dev/disk/by-partlabel/system
+Where=/mnt/stock-system
+Type=ext4
+Options=ro
+[Install]
+WantedBy=local-fs.target
