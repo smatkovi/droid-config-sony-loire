@@ -1,0 +1,11 @@
+[Unit]
+Description=Event-driven mobile data reconnect (ofono context loss)
+After=dbus.service
+
+[Service]
+ExecStart=/usr/bin/kugo-data-eventd
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

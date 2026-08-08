@@ -1,0 +1,22 @@
+#!/bin/sh
+# Event-driven mobile data reconnect: reacts to ofono context loss instantly.
+dbus-monitor --system "type='signal',interface='org.ofono.ConnectionContext',member='PropertyChanged'" 2>/dev/null | \
+while read -r line; do
+  case "$line" in *'string "Active"'*) want=1; continue ;; esac
+  [ "${want:-0}" = 1 ] || continue
+  want=0
+  case "$line" in *"boolean false"*) ;; *) continue ;; esac
+  sleep 2   # let connman settle its service state first
+  S=$(connmanctl services 2>/dev/null | awk '/cellular_/{print $NF; exit}')
+  [ -n "$S" ] || continue
+  connmanctl state 2>/dev/null | grep -q 'OfflineMode = False' || continue
+  svc=$(connmanctl services "$S" 2>/dev/null)
+  echo "$svc" | grep -q 'AutoConnect = True' || continue
+  st=$(echo "$svc" | awk '/State =/{print $3; exit}')
+  case "$st" in idle|failure) ;; *) continue ;; esac
+  of=$(dbus-send --system --print-reply --dest=org.ofono /ril_0 org.ofono.ConnectionManager.GetProperties 2>/dev/null)
+  echo "$of" | awk '/"Powered"/{getline; print}'  | grep -q true || continue
+  echo "$of" | awk '/"Attached"/{getline; print}' | grep -q true || continue
+  echo "context dropped -> reconnect $S"
+  connmanctl connect "$S" >/dev/null 2>&1
+done
