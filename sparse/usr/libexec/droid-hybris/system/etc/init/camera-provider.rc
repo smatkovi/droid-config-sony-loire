@@ -1,4 +1,0 @@
-service camera-provider-2-4 /vendor/bin/hw/android.hardware.camera.provider@2.4-service
-    class core
-    user root
-    group audio camera input drmrpc system
