@@ -1,1 +1,1 @@
-../kugo-fp-prepare.service
+/etc/systemd/system/kugo-fp-prepare.service
