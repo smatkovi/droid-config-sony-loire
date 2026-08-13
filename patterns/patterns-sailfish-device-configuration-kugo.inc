@@ -20,6 +20,7 @@ Requires: jolla-settings-system-flashlight
 
 Requires: geoclue-provider-mlsdb
 Requires: mapplauncherd-booster-silica-qt5-media
+Requires: sailfish-fpd
 
 Requires: patterns-sailfish-consumer-generic
 Requires: patterns-sailfish-device-tools
