@@ -1,0 +1,6 @@
+#!/bin/sh
+# The DSP sensor registry written at first boot can end up unusable
+# (sensorfwd: "no sensors found"). Deleting it makes the ADSP write a
+# fresh, working one on the next cold boot. Runs once.
+[ -e /data/misc/sensors/sns.reg ] && rm -f /data/misc/sensors/sns.reg && echo "removed stale sns.reg"
+exit 0

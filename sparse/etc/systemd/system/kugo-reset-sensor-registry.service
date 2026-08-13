@@ -1,0 +1,15 @@
+[Unit]
+Description=Drop stale DSP sensor registry once, so the ADSP rebuilds it
+DefaultDependencies=no
+After=local-fs.target
+Before=kugo-dsp-boot.service droid-hal-init.service
+ConditionPathExists=!/var/lib/kugo-sensor-registry-reset
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/kugo-reset-sensor-registry
+ExecStartPost=/bin/touch /var/lib/kugo-sensor-registry-reset
+
+[Install]
+WantedBy=sysinit.target
