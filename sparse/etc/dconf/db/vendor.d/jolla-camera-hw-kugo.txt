@@ -1,6 +1,6 @@
 [apps/jolla-camera/primary/image]
 imageResolution='5312x2988'
-videoResolution='1920x1080'
+videoResolution='1280x720'
 viewfinderResolution='640x480'
 isoValues=[0, 100, 200, 400, 800, 1600]
 whiteBalanceValues=[0, 3, 2, 6, 5]
@@ -15,7 +15,7 @@ focusDistance=8
 
 [apps/jolla-camera/secondary/image]
 imageResolution='2592x1944'
-videoResolution='1920x1080'
+videoResolution='1280x720'
 viewfinderResolution='640x480'
 isoValues=[0, 100, 200, 400, 800, 1600]
 whiteBalanceValues=[0, 3, 2, 6, 5]
@@ -30,7 +30,7 @@ focusDistance=8
 
 [apps/jolla-camera/primary/video]
 imageResolution='5312x2988'
-videoResolution='1920x1080'
+videoResolution='1280x720'
 viewfinderResolution='1280x720'
 isoValues=[0, 100, 200, 400, 800, 1600]
 whiteBalanceValues=[0, 3, 2, 6, 5]
@@ -41,7 +41,7 @@ focusDistance=16
 
 [apps/jolla-camera/secondary/video]
 imageResolution='2592x1944'
-videoResolution='1920x1080'
+videoResolution='1280x720'
 viewfinderResolution='1280x720'
 isoValues=[0, 100, 200, 400, 800, 1600]
 whiteBalanceValues=[0, 3, 2, 6, 5]

@@ -501,3 +501,34 @@ kugo-video-8x-Patch (BufferQueue-Guards >=9 -> >=8) - Branch in
 external/droidmedia pruefen und droidmedia daraus neu bauen.
 TODO PAKETIERUNG: alle obigen Libs + HAL3-Prop + provider/cashsvr
 in droid-hal/droid-config giessen (Punkt 5 alt, jetzt dringend).
+
+## VIDEOAUFNAHME GOLDEN GELOEST (2.) 08.08. ~22:15
+Rueckfall-Ursache seit Rootfs-Verlust 4./5.8.: allocator-hidl
+(a31682a, android.hidl.allocator@1.0/ashmem aus /mnt/stock-system)
+lag im sparse, fehlte aber auf golden. Fotos brauchen ihn nicht
+(gralloc), MediaCodec-Input-Buffer schon: ACodec allocateBuffersOnPort
+holt im Treble-Pfad IAllocator "ashmem" - fehlt der Dienst, wartet
+getService STILL im futex. Kein Fehler, keine Binder-Transaktion,
+OMX-Service idle. Folgen: MediaCodec.start haengt nach allocBuf,
+stop blockiert in video_frames<=4-Schleife, 0-Byte-MP4s; "Client
+wasn't able to handle a received frame"-Flut = Folge (vfsrc-Pool
+flushing waehrend haengendem Start), nicht Ursache.
+FIX: Unit + wants-Link zurueck aufs Geraet, systemctl enable,
+REBOOT ZWINGEND - Service-Zoo nach killall-Orgie verheddert
+(doppelter graphics-allocator, unregistrierter hidl), nur ein
+sauberer Boot zaehlt als Test.
+Zusaetzlich vendor.d dconf videoResolution 1920x1080 -> 1280x720:
+kugo-HAL lehnt 1080p im Video-Modus ab (set_params error ->
+camerabin-Fallback 640x360). User-dconf allein reicht NICHT,
+vendor.d ueberstimmt.
+ACodec d982c774a + droidmedia b2c44f4/a84d9bc bleiben drauf;
+ob einzeln noetig = UNGETESTET (Minimalitaetstest offen),
+Revert-Rezept: checkout 948526f9f -- ACodec.cpp/CameraSource.cpp,
+make libstagefright, scp nach lib{,64}.
+LEHREN: binder-list -d /dev/hwbinder als ERSTCHECK bei Media-
+Haengern; pgrep jolla-camera OHNE -f (sonst nur invoker-Prozesse);
+/proc/PID/task/*/{stack,wchan} sezieren Haenger in Minuten (futex
+ueberall + idler OMX = verlorener Handshake, kein Treiberproblem);
+GST_DEBUG per Drop-in in booster-silica-media@.service.d, Shell-Env
+wird von sailjail gefiltert; VINTF-Warnung graphics.allocator/default
++ binder ioctl -22 auch auf offiziellem Jolla-10V = NORMAL.
