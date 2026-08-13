@@ -532,3 +532,44 @@ ueberall + idler OMX = verlorener Handshake, kein Treiberproblem);
 GST_DEBUG per Drop-in in booster-silica-media@.service.d, Shell-Env
 wird von sailjail gefiltert; VINTF-Warnung graphics.allocator/default
 + binder ioctl -22 auch auf offiziellem Jolla-10V = NORMAL.
+
+## WAYDROID (kugo) - Stand 13.08., laeuft auf golden + Patient
+Im Image liegen NUR die Voraussetzungen: /etc/gbinder.d/anbox.conf
+(anbox-Devices, aidl3/hidl) und udev 99-kugo-fb-binder.rules
+(MODE 0666 fuer fb*, binder, hwbinder, vndbinder, anbox-*).
+"waydroid init" allein reicht NICHT - es zieht MAINLINE-Images
+(vendor.img 402MB), die zum Halium-Unterbau nicht passen.
+HALIUM ist VENDOR-Typ, nicht System-Typ ("-s HALIUM_x" gibt 404).
+Bezug: sourceforge.net/projects/waydroid/files/images/
+  system/lineage/waydroid_arm64/  VANILLA (golden: Jul 2022, 1.5G)
+  vendor/waydroid_arm64/          HALIUM_10 (golden: 76M)
+Images nach /etc/waydroid-extra/images/, dann "waydroid init -f".
+DANACH DREI KORREKTUREN (init -f ueberschreibt sie jedes Mal):
+ (1) waydroid.cfg: vendor_type = HALIUM_10,
+     images_path = /etc/waydroid-extra/images
+ (2) waydroid.cfg: binder/vndbinder/hwbinder -> anbox-*
+     plus binder_protocol = aidl2, service_manager_protocol = aidl2
+ (3) lxc/waydroid/config_nodes Zeilen 20-22: QUELLE auf /dev/anbox-*
+     aendern, Ziel bleibt dev/binder - sonst mountet der Container
+     die Host-Binder und servicemanager scheitert mit "Device or
+     resource busy"
+Ausserdem: dnsmasq muss aus (systemctl disable --now dnsmasq), sonst
+"waydroid-net.sh: failed to create listening socket for 192.168.240.1:
+Address already in use". NICHT im Image gemacht - Nebenwirkung waere
+fehlendes Tethering-DNS.
+Paketinstallation: /var/lib/waydroid muss Symlink nach /home/waydroid
+sein (Paket legt ihn an). Ein vorher per "waydroid init" erzeugtes
+echtes Verzeichnis dort blockiert die Installation mit "File from
+package already exists as a directory".
+GRAFIK: Das HALIUM-Vendor-Image kennt den Adreno 510 nicht. Host-GPU-
+Libs muessen per OVERLAY in den Container (Bind-Mounts scheitern still,
+Vendor-Image ist read-only ext4). golden hat unter
+/var/lib/waydroid/overlay/vendor/lib64/:
+  libadreno_utils.so libdrmutils.so libgrallocutils.so libgsl.so
+  libllvm-glnext.so libllvm-qcom.so libllvm-qgl.so libmemalloc.so
+  libqdMetaData.so libqdutils.so libqservice.so libsdmcore.so
+  libsdmutils.so
+und unter .../lib64/hw/: gralloc.kugo.so gralloc.msm8952.so
+(kein egl/-Verzeichnis noetig gewesen).
+Offen: Clipboard (pyclip fehlt; golden hat eigenes RPM
+waydroid-clipboard-1.3 mit clipboard_manager.py-Rewrite).
