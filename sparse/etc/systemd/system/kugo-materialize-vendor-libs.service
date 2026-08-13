@@ -1,0 +1,15 @@
+[Unit]
+Description=Materialize /vendor libs that symlink into /mnt (invisible in firejail)
+DefaultDependencies=no
+After=local-fs.target mnt-oem.mount
+Before=droid-hal-init.service sysinit.target
+ConditionPathExists=!/var/lib/kugo-vendor-libs-materialized
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/kugo-materialize-vendor-libs
+ExecStartPost=/bin/touch /var/lib/kugo-vendor-libs-materialized
+
+[Install]
+WantedBy=sysinit.target

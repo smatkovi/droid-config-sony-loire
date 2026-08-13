@@ -1,0 +1,17 @@
+#!/bin/sh
+# Sandboxed apps (firejail) cannot follow /vendor symlinks into /mnt/oem
+# or /mnt/stock-system - those mounts are not visible inside the jail.
+# Replace such symlinks with real copies once, at first boot.
+n=0
+for d in /vendor/lib64 /vendor/lib /vendor/lib64/hw /vendor/lib/hw; do
+  [ -d "$d" ] || continue
+  for s in "$d"/*; do
+    [ -L "$s" ] || continue
+    t=$(readlink "$s")
+    case "$t" in /mnt/*) ;; *) continue ;; esac
+    [ -e "$t" ] || { echo "source missing: $t"; continue; }
+    cp "$t" "$s.tmp$$" 2>/dev/null || continue
+    rm "$s" && mv "$s.tmp$$" "$s" && chmod 644 "$s" && n=$((n+1))
+  done
+done
+echo "materialized $n libraries"
