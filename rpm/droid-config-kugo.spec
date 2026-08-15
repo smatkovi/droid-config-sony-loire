@@ -1,5 +1,5 @@
-%global __requires_exclude_from ^/usr/libexec/droid-hybris/.*$
-%global __provides_exclude_from ^/usr/libexec/droid-hybris/.*$
+%global __requires_exclude_from ^(/usr/libexec/droid-hybris/.*|/var/lib/waydroid/overlay/.*)$
+%global __provides_exclude_from ^(/usr/libexec/droid-hybris/.*|/var/lib/waydroid/overlay/.*)$
 
 
 %define device kugo
