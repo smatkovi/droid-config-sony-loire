@@ -1,0 +1,13 @@
+[Unit]
+Description=Restore Android file capabilities lost in packaging (kugo)
+DefaultDependencies=no
+After=local-fs.target
+Before=droid-hal-init.service sysinit.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/kugo-android-filecaps
+
+[Install]
+WantedBy=sysinit.target
