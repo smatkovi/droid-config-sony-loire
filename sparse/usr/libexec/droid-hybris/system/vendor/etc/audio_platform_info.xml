@@ -3,6 +3,9 @@
     <acdb_ids>
         <!-- kugo: Sony SPKR_PHONE_SPKR_STEREO (14 is SPKR_PHONE_SPKR_MONO) -->
         <device name="SND_DEVICE_OUT_SPEAKER" acdb_id="15"/>
+        <!-- the same id for the L/R-swapped speaker; when the two differ the
+             HAL re-selects the device at every stream start -->
+        <device name="SND_DEVICE_OUT_SPEAKER_REVERSE" acdb_id="15"/>
     </acdb_ids>
     <pcm_ids>
         <usecase name="USECASE_VOICEMMODE1_CALL" type="in" id="35"/>
