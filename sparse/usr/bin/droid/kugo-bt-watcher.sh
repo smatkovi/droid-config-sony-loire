@@ -13,6 +13,9 @@ FAILS=0
 healthy() { hciconfig hci0 version >/dev/null 2>&1; }
 wants_on() { rfkill list bluetooth 2>/dev/null | grep -q "Soft blocked: no"; }
 
+# The boot-time attach takes up to about a minute; don't interrupt it.
+for i in $(seq 1 45); do healthy && break; sleep 2; done
+
 while true; do
     wants_on || FAILS=0
     if wants_on && ! healthy && [ $FAILS -lt 3 ]; then
