@@ -1,0 +1,116 @@
+#!/usr/bin/python3
+"""kugo: add the missing DRI (restart interval) segment to camera JPEGs.
+
+The camera's hardware JPEG encoder splits the picture into fragments separated by restart (RST)
+markers, but the header it writes has no DRI segment, so decoders give up. This inserts DRI before
+the scan, with the interval derived from the image geometry and the number of RST markers.
+Based on ahjolinna's kugo-jpeg-watch.py. Usage: kugo-jpeg-fix DIR (run by kugo-jpeg-fix.path).
+"""
+import os, struct, sys, time
+
+
+def needs_dri(d):
+    """Return (scan offset, restart interval) if the JPEG needs a DRI segment, else None."""
+    if d[:2] != b'\xff\xd8':
+        return None
+    i, size, comps = 2, None, []
+    while i < len(d) - 4:
+        if d[i] != 0xFF:
+            return None
+        m = d[i + 1]
+        if m == 0xFF:                       # fill byte
+            i += 1
+            continue
+        if 0xD0 <= m <= 0xD9:
+            i += 2
+            continue
+        seg_len = struct.unpack('>H', d[i + 2:i + 4])[0]
+        if m == 0xDD:                       # DRI already there
+            return None
+        if m in (0xC0, 0xC1):               # baseline / extended sequential only
+            h, w = struct.unpack('>HH', d[i + 5:i + 9])
+            n = d[i + 9]
+            comps = [(d[i + 11 + 3 * k] >> 4, d[i + 11 + 3 * k] & 0xF) for k in range(n)]
+            size = (w, h)
+        if m == 0xDA:
+            break
+        i += 2 + seg_len
+    else:
+        return None
+    if size is None or not comps:
+        return None
+    sos = i
+    j = sos + 2 + struct.unpack('>H', d[sos + 2:sos + 4])[0]
+    rst = 0
+    while True:                             # entropy data: 0xFF is stuffed or a marker
+        j = d.find(b'\xff', j, len(d) - 1)
+        if j < 0:
+            break
+        m = d[j + 1]
+        if 0xD0 <= m <= 0xD7:
+            rst += 1
+        elif m == 0xD9:
+            break
+        j += 2
+    if rst == 0:
+        return None
+    hmax = max(c[0] for c in comps) if len(comps) > 1 else 1
+    vmax = max(c[1] for c in comps) if len(comps) > 1 else 1
+    mcux = -(-size[0] // (8 * hmax))
+    mcuy = -(-size[1] // (8 * vmax))
+    total = mcux * mcuy
+    # rst markers separate rst+1 intervals: ceil(total / interval) == rst + 1
+    lo, hi = -(-total // (rst + 1)), (total - 1) // rst
+    rows = [k * mcux for k in range(1, mcuy + 1) if lo <= k * mcux <= hi]
+    if rows:
+        interval = rows[0]                  # the encoder restarts at whole MCU rows
+    elif lo == hi:
+        interval = lo
+    else:
+        return None                         # ambiguous: leave the file alone
+    return sos, interval
+
+
+def fix(path):
+    try:
+        d = open(path, 'rb').read()
+    except OSError:
+        return False
+    r = needs_dri(d)
+    if r is None:
+        return False
+    sos, interval = r
+    tmp = path + '.kugo-tmp'
+    with open(tmp, 'wb') as f:
+        f.write(d[:sos] + b'\xff\xdd\x00\x04' + struct.pack('>H', interval) + d[sos:])
+    os.chmod(tmp, os.stat(path).st_mode & 0o7777)
+    os.replace(tmp, path)
+    print(f'{os.path.basename(path)}: added DRI {interval}', flush=True)
+    return True
+
+
+def main():
+    top = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser('~/Pictures/Camera')
+    stamp = os.path.expanduser('~/.cache/kugo-jpeg-fix.stamp')
+    since = os.stat(stamp).st_mtime - 5 if os.path.exists(stamp) else 0
+    start = time.time()
+    try:
+        names = os.listdir(top)
+    except OSError:
+        return
+    for n in sorted(names):
+        if n.lower().endswith(('.jpg', '.jpeg')):
+            p = os.path.join(top, n)
+            try:
+                if os.stat(p).st_mtime >= since:
+                    fix(p)
+            except OSError:
+                pass
+    os.makedirs(os.path.dirname(stamp), exist_ok=True)
+    with open(stamp, 'a'):
+        pass
+    os.utime(stamp, (start, start))
+
+
+if __name__ == '__main__':
+    main()

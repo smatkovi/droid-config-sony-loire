@@ -1,0 +1,64 @@
+#!/bin/sh
+# kugo: set up Waydroid in one step, as smatkovi's README "Waydroid setup" describes.
+#   devel-su kugo-waydroid-setup
+# 1. installs waydroid, waydroid-runner and waydroid-settings from sailfishos:chum;
+# 2. downloads LineageOS 17.1 VANILLA (system) and HALIUM_10 (vendor) from the Waydroid OTA
+#    index, checks their SHA-256 and unpacks them to /etc/waydroid-extra/images (about 1.6 GB);
+# 3. runs "waydroid init -f", the corrections (kugo-waydroid-fixup) and starts the container.
+# Then start Android with the "Waydroid" icon. The first boot takes several minutes.
+set -e
+[ "$(id -u)" = 0 ] || { echo "Run as root: devel-su kugo-waydroid-setup" >&2; exit 1; }
+ssu lr 2>/dev/null | grep -q sailfishos-chum || {
+    echo "Enable the sailfishos:chum repository first (install the Chum app)." >&2; exit 1; }
+
+# The waydroid package wants /var/lib/waydroid as a symlink to /home/waydroid; a real
+# directory there (older droid-config, or an earlier manual init) blocks the installation.
+if [ -d /var/lib/waydroid ] && [ ! -L /var/lib/waydroid ]; then
+    mv /var/lib/waydroid "/var/lib/waydroid.old-$(date +%Y%m%d%H%M%S)"
+fi
+if ! rpm -q waydroid waydroid-runner waydroid-settings >/dev/null 2>&1; then
+    echo "== Installing Waydroid from sailfishos:chum"
+    zypper -n --gpg-auto-import-keys refresh >/dev/null 2>&1 || true
+    zypper -n install --no-recommends waydroid waydroid-runner waydroid-settings
+fi
+
+# The dnsmasq package arrives as a waydroid dependency and enables itself; it would hold port 53
+# that waydroid-net.sh's own dnsmasq needs (README: "systemctl disable --now dnsmasq").
+systemctl disable --now dnsmasq.service >/dev/null 2>&1 || true
+
+echo "== Android images (LineageOS 17.1 VANILLA + HALIUM_10)"
+python3 - <<'PY'
+import hashlib, json, os, urllib.request, zipfile
+IMG = "/etc/waydroid-extra/images"; DL = "/home/.kugo-waydroid-dl"
+os.makedirs(IMG, exist_ok=True); os.makedirs(DL, exist_ok=True)
+for path, ver, name in (("system/lineage/waydroid_arm64/VANILLA", "17.1", "system.img"),
+                        ("vendor/waydroid_arm64/HALIUM_10", "17.1", "vendor.img")):
+    if os.path.exists(os.path.join(IMG, name)):
+        print("have", name); continue
+    idx = json.load(urllib.request.urlopen("https://ota.waydro.id/%s.json" % path, timeout=60))["response"]
+    e = [x for x in idx if x.get("version") == ver][0]
+    z = os.path.join(DL, e["filename"])
+    print("downloading %s (%d MB)" % (e["filename"], e["size"] // 2**20), flush=True)
+    h = hashlib.sha256()
+    with urllib.request.urlopen(e["url"], timeout=120) as r, open(z + ".part", "wb") as f:
+        while True:
+            b = r.read(1 << 20)
+            if not b: break
+            f.write(b); h.update(b)
+    if h.hexdigest() != e["id"]:
+        os.remove(z + ".part"); raise SystemExit("checksum mismatch: " + e["filename"])
+    os.replace(z + ".part", z)
+    with zipfile.ZipFile(z) as zf:
+        zf.extract(name, IMG + "/.new")
+    os.replace(os.path.join(IMG, ".new", name), os.path.join(IMG, name))
+    os.rmdir(os.path.join(IMG, ".new")); os.remove(z)
+    print("verified and unpacked", name, flush=True)
+PY
+
+echo "== waydroid init -f"
+systemctl stop waydroid-container 2>/dev/null || true
+waydroid init -f
+/usr/libexec/kugo-waydroid-fixup
+systemctl enable waydroid-container >/dev/null 2>&1 || true
+systemctl restart waydroid-container
+echo "Done. Start Android with the \"Waydroid\" icon; the first boot takes several minutes."

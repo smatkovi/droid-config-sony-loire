@@ -440,7 +440,7 @@ Diagnosewerkzeug, unabhaengig von rild/QMI.
   AT$QCSIMSTAT?   -> 0,UNKNOWN
   AT$QCSIMAPP?    -> 0,"SUB1","No Service"  (Slot konfiguriert!)
   AT+CRSM=176,... -> keine Antwort (kein Kartenkontakt)
-  AT+CGSN         -> IMEI 352631083965547 (intakt)
+  AT+CGSN         -> IMEI (number removed) (intakt)
 Modem laeuft, kalibriert, 28 QMI-Dienste - nur UIM (0x0b) fehlt, weil
 keine Karte kontaktiert wird. NV-Reset (modemst1/2 mit 0xFF, Backup in
 /home/defaultuser/modem-backup/) aenderte nichts. Karte funktioniert im

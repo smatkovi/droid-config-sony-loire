@@ -1,0 +1,82 @@
+#!/bin/sh
+# kugo: keeps Waydroid working on this port, as smatkovi's README "Waydroid setup" describes.
+# Runs as ExecStartPre of waydroid-container.service, so everything is re-applied after
+# "waydroid init -f" and after waydroid package updates. Idempotent.
+W=/var/lib/waydroid
+CFG=$W/waydroid.cfg
+NODES=$W/lxc/waydroid/config_nodes
+SRC=/usr/share/kugo-waydroid/overlay
+OV=$W/overlay
+HOST32=/usr/libexec/droid-hybris/system/vendor/lib
+
+# 1. GPU overlay. 64-bit: the patched gralloc stack (P-era gralloc1 hooks) shipped in
+#    droid-config. 32-bit: the host's own Adreno EGL and gralloc libraries. The 32-bit zygote
+#    preloads EGL and aborts without them ("couldn't find an OpenGL ES implementation"); the
+#    system_server then waits for it until its watchdog kills it, and Android boots in a loop.
+#    Never add hwcomposer/composer/mapper libraries (black window, see the README).
+if [ -d "$SRC" ]; then
+    mkdir -p "$OV/vendor/lib/egl"
+    cp -a "$SRC/." "$OV/"
+    for f in $(cd "$SRC/vendor/lib64" && find . -type f | sed 's|^\./||'); do
+        [ -f "$OV/vendor/lib/$f" ] && continue
+        for d in $HOST32 /mnt/oem/lib; do
+            s=$(readlink -f "$d/$f")
+            if [ -f "$s" ]; then mkdir -p "$(dirname "$OV/vendor/lib/$f")"; cp "$s" "$OV/vendor/lib/$f"; break; fi
+        done
+    done
+    for f in /mnt/oem/lib/egl/*; do
+        [ -f "$f" ] && [ ! -f "$OV/vendor/lib/egl/${f##*/}" ] && cp "$f" "$OV/vendor/lib/egl/"
+    done
+fi
+
+# 2. The README's corrections after "waydroid init -f": HALIUM_10, custom images, the anbox-*
+#    binder devices, aidl2 protocols (busybox sed has no one-line multi-line 'a', so awk).
+if [ -f "$CFG" ]; then
+    sed -i \
+      -e 's|^vendor_type *=.*|vendor_type = HALIUM_10|' \
+      -e 's|^images_path *=.*|images_path = /etc/waydroid-extra/images|' \
+      -e 's|^binder *=.*|binder = anbox-binder|' \
+      -e 's|^vndbinder *=.*|vndbinder = anbox-vndbinder|' \
+      -e 's|^hwbinder *=.*|hwbinder = anbox-hwbinder|' \
+      -e 's|^binder_protocol *=.*|binder_protocol = aidl2|' \
+      -e 's|^service_manager_protocol *=.*|service_manager_protocol = aidl2|' \
+      "$CFG"
+    if ! grep -q '^binder_protocol' "$CFG"; then
+        awk '{print} /^hwbinder/ {print "binder_protocol = aidl2"; print "service_manager_protocol = aidl2"}' \
+            "$CFG" > "$CFG.kugo-tmp" && cat "$CFG.kugo-tmp" > "$CFG" && rm -f "$CFG.kugo-tmp"
+    fi
+fi
+# The container must get the anbox-* devices, not the host's binders ("Device or resource busy").
+[ -f "$NODES" ] && sed -i \
+  -e 's|^lxc.mount.entry = /dev/binder dev/binder |lxc.mount.entry = /dev/anbox-binder dev/binder |' \
+  -e 's|^lxc.mount.entry = /dev/vndbinder dev/vndbinder |lxc.mount.entry = /dev/anbox-vndbinder dev/vndbinder |' \
+  -e 's|^lxc.mount.entry = /dev/hwbinder dev/hwbinder |lxc.mount.entry = /dev/anbox-hwbinder dev/hwbinder |' \
+  "$NODES"
+
+# 3. Properties from the working device (init -f regenerates waydroid_base.prop).
+P=$W/waydroid_base.prop
+if [ -f "$P" ]; then
+    for kv in ro.hardware.gralloc=kugo persist.waydroid.no_background_subsurface=true; do
+        grep -q "^${kv%%=*}=" "$P" || echo "$kv" >> "$P"
+    done
+fi
+
+# 4. The system dnsmasq (pulled in as a waydroid dependency; nothing else on Sailfish uses it)
+#    listens on 0.0.0.0:53, so waydroid-net.sh's own dnsmasq fails ("failed to create
+#    listening socket for 192.168.240.1: Address already in use") and every session ends at once.
+if systemctl -q is-enabled dnsmasq.service 2>/dev/null || systemctl -q is-active dnsmasq.service 2>/dev/null; then
+    systemctl disable --now --no-block dnsmasq.service >/dev/null 2>&1
+fi
+
+# 5. One launcher: waydroid-runner. The package's own one runs "waydroid show-full-ui", which
+#    on an uninitialised install would fetch the MAINLINE images that don't work here.
+D=/usr/share/applications/waydroid.desktop
+[ -f "$D" ] && ! grep -q '^NoDisplay=true' "$D" && sed -i 's/^\[Desktop Entry\]$/[Desktop Entry]\nNoDisplay=true/' "$D"
+# 6. waydroid-runner with the larger Wayland client buffer (kugo-wlbuf.so). It is a QtWayland 5.6
+#    compositor and libwayland-server's default 4 KiB limit dropped Android's composer while an
+#    app was opening ("error in client communication"), which ended the whole session.
+R=/usr/share/applications/waydroid-runner.desktop
+if [ -f "$R" ] && [ -f /usr/lib64/kugo-wlbuf.so ] && ! grep -q 'kugo-wlbuf' "$R"; then
+    sed -i 's|^Exec=waydroid-runner$|Exec=env LD_PRELOAD=/usr/lib64/kugo-wlbuf.so waydroid-runner|' "$R"
+fi
+exit 0

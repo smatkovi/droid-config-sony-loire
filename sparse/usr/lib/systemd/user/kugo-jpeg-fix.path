@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch new camera photos for the missing JPEG restart interval (kugo)
+
+[Path]
+PathChanged=%h/Pictures/Camera
+MakeDirectory=yes
+
+[Install]
+WantedBy=post-user-session.target

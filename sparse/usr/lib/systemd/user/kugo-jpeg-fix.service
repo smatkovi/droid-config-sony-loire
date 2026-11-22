@@ -1,0 +1,7 @@
+[Unit]
+Description=Add the missing restart interval to camera JPEGs (kugo)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/kugo-jpeg-fix %h/Pictures/Camera
+Nice=10

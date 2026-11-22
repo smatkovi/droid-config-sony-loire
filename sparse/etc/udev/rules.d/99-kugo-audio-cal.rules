@@ -1,0 +1,8 @@
+# kugo: the audio calibration nodes from the vendor ueventd.rc (Sony stock
+# vendor/ueventd.rc: 0660 system audio). droid-hal's generated rules only cover
+# AOSP's /ueventd.rc, so these stayed root:root 0600 and the ACDB loader in
+# PulseAudio's audio HAL failed with "Cannot open /dev/msm_audio_cal errno: 13":
+# no Sony speaker/mic calibration reached the DSP.
+KERNEL=="msm_audio_cal", MODE="0660", GROUP="audio", OWNER="system"
+KERNEL=="msm_hweffects", MODE="0660", GROUP="audio", OWNER="system"
+KERNEL=="msm_rtac", MODE="0660", GROUP="audio", OWNER="system"

@@ -1,0 +1,12 @@
+#!/bin/sh
+# kugo: core-dump helper in front of rich-core-dumper. Processes in another PID namespace (the
+# Waydroid container's Android) are dropped: Android writes its own tombstones, and their
+# rich cores only filled /var/cache/core-dumps and raised crash-report notifications.
+# Everything else goes to rich-core-dumper unchanged (the kernel passes the core on stdin).
+pid=
+for a in "$@"; do case "$a" in --pid=*) pid=${a#--pid=} ;; esac; done
+if [ -n "$pid" ] && [ -e "/proc/$pid/ns/pid" ] &&
+   [ "$(readlink "/proc/$pid/ns/pid")" != "$(readlink /proc/1/ns/pid)" ]; then
+    exit 0
+fi
+exec /usr/sbin/rich-core-dumper "$@"

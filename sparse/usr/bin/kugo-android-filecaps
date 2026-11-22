@@ -1,0 +1,7 @@
+#!/bin/sh
+# Android's build gives some binaries file capabilities (fs_config); the hybris packages lose
+# them. Without CAP_SETGID, CAP_SYSLOG and CAP_AUDIT_CONTROL, logd exits right after start
+# ("failed to set AID_SYSTEM AID_PACKAGE_INFO groups") and init restarts it every few seconds,
+# so Android's log (logcat) never works. Runs at every boot, since a package update drops them.
+S=/usr/libexec/droid-hybris/system/bin
+setcap cap_syslog,cap_audit_control,cap_setgid+ep $S/logd

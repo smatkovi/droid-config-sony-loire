@@ -1828,14 +1828,19 @@
         <ctl name="RX INT8_1 MIX1 INP0" value="RX1" />
         <ctl name="RX7 Digital Volume" value="86" />
         <ctl name="RX8 Digital Volume" value="86" />
-        <ctl name="SpkrLeft COMP Switch" value="1" />
-        <ctl name="SpkrRight COMP Switch" value="1" />
+        <ctl name="SpkrLeft COMP Switch" value="0" />
+        <ctl name="SpkrRight COMP Switch" value="0" />
         <ctl name="SpkrLeft BOOST Switch" value="1" />
         <ctl name="SpkrRight BOOST Switch" value="1" />
         <ctl name="SpkrLeft VISENSE Switch" value="1" />
         <ctl name="SpkrRight VISENSE Switch" value="1" />
         <ctl name="SpkrLeft SWR DAC_Port Switch" value="1" />
         <ctl name="SpkrRight SWR DAC_Port Switch" value="1" />
+        <!-- kugo: compander (WSA881x DRE) off on both sides; the amplifiers then
+             use their own gain (SpkrLeft/Right WSA PA Gain, G_18_DB). With DRE
+             on, the speaker was quieter and no cleaner (2026-11-22, by ear). -->
+        <ctl name="COMP7 Switch" value="0" />
+        <ctl name="COMP8 Switch" value="0" />
     </path>
 
     <path name="wsa-speaker-mono">
