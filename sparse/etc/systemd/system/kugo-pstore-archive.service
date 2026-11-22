@@ -1,0 +1,11 @@
+[Unit]
+Description=Save the previous boot's kernel log from pstore (kugo)
+After=local-fs.target
+ConditionDirectoryNotEmpty=/sys/fs/pstore
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/kugo-pstore-archive
+
+[Install]
+WantedBy=multi-user.target

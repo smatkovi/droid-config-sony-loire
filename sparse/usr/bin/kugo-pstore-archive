@@ -1,0 +1,14 @@
+#!/bin/sh
+# The kernel keeps the previous boot's console log and Android log in RAM (ramoops,
+# /sys/fs/pstore), and after a panic or watchdog reset also the crash dump. It survives a
+# warm reset but not the next one, and nothing on Sailfish saves it (no systemd-pstore).
+# Copy it to /var/log/kugo-pstore/<time>/ at every boot, and keep the last 10 boots.
+P=/sys/fs/pstore
+D=/var/log/kugo-pstore
+ls "$P"/* >/dev/null 2>&1 || exit 0
+T=$(date +%Y%m%d-%H%M%S)
+mkdir -p "$D/$T"
+for f in "$P"/*; do gzip -c "$f" > "$D/$T/$(basename "$f").gz"; done
+tr ' ' '\n' < /proc/cmdline | grep -E '^(startup|warmboot)=' > "$D/$T/bootreason"
+ls -1d "$D"/*/ 2>/dev/null | sort | head -n -10 | while read old; do rm -rf "$old"; done
+echo "archived $(ls "$D/$T" | wc -l) pstore records to $D/$T"
