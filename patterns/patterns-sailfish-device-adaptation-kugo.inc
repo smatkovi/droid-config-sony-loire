@@ -13,6 +13,8 @@ Requires: libhybris-libwayland-egl
 
 # Bluetooth
 Requires: bluetooth-rfkill-event-hciattach
+# kugo-bt-watcher checks the adapter with hciconfig
+Requires: bluez5-tools
 Requires: libsailfishapp-launcher
 
 # Telephony
