@@ -72,4 +72,11 @@ fi
 #    on an uninitialised install would fetch the MAINLINE images that don't work here.
 D=/usr/share/applications/waydroid.desktop
 [ -f "$D" ] && ! grep -q '^NoDisplay=true' "$D" && sed -i 's/^\[Desktop Entry\]$/[Desktop Entry]\nNoDisplay=true/' "$D"
+# 6. waydroid-runner with the larger Wayland client buffer (kugo-wlbuf.so). It is a QtWayland 5.6
+#    compositor and libwayland-server's default 4 KiB limit dropped Android's composer while an
+#    app was opening ("error in client communication"), which ended the whole session.
+R=/usr/share/applications/waydroid-runner.desktop
+if [ -f "$R" ] && [ -f /usr/lib64/kugo-wlbuf.so ] && ! grep -q 'kugo-wlbuf' "$R"; then
+    sed -i 's|^Exec=waydroid-runner$|Exec=env LD_PRELOAD=/usr/lib64/kugo-wlbuf.so waydroid-runner|' "$R"
+fi
 exit 0
