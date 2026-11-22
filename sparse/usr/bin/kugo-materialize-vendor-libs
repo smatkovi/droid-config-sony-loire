@@ -1,17 +1,22 @@
 #!/bin/sh
-# Sandboxed apps (firejail) cannot follow /vendor symlinks into /mnt/oem
-# or /mnt/stock-system - those mounts are not visible inside the jail.
-# Replace such symlinks with real copies once, at first boot.
-n=0
-for d in /vendor/lib64 /vendor/lib /vendor/lib64/hw /vendor/lib/hw; do
+# Sandboxed apps (sailjail/firejail) cannot see /mnt. Android libraries that are symlinks into
+# /mnt/oem or /mnt/stock-system therefore fail to load inside the jail. Without the Adreno
+# EGL/GLES drivers (egl/), Android's libEGL aborts every sandboxed app that draws: the phone app
+# crash-looped. Replace such symlinks with copies.
+# Runs at every boot, since a package update can bring the links back. Idempotent: only symlinks
+# into /mnt are touched, and links without a source are left alone.
+H=/usr/libexec/droid-hybris/system    # /vendor -> $H/vendor
+n=0; miss=0
+for d in $H/lib $H/lib64 $H/lib/hw $H/lib64/hw $H/lib/egl $H/lib64/egl \
+         $H/vendor/lib $H/vendor/lib64 $H/vendor/lib/hw $H/vendor/lib64/hw \
+         $H/vendor/lib/egl $H/vendor/lib64/egl; do
   [ -d "$d" ] || continue
   for s in "$d"/*; do
     [ -L "$s" ] || continue
     t=$(readlink "$s")
     case "$t" in /mnt/*) ;; *) continue ;; esac
-    [ -e "$t" ] || { echo "source missing: $t"; continue; }
-    cp "$t" "$s.tmp$$" 2>/dev/null || continue
-    rm "$s" && mv "$s.tmp$$" "$s" && chmod 644 "$s" && n=$((n+1))
+    [ -f "$t" ] || { miss=$((miss+1)); continue; }
+    cp "$t" "$s.tmp$$" && chmod 644 "$s.tmp$$" && mv -f "$s.tmp$$" "$s" && n=$((n+1))
   done
 done
-echo "materialized $n libraries"
+echo "materialized $n libraries ($miss links without a source left alone)"
