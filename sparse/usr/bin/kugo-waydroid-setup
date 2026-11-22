@@ -22,6 +22,10 @@ if ! rpm -q waydroid waydroid-runner waydroid-settings >/dev/null 2>&1; then
     zypper -n install --no-recommends waydroid waydroid-runner waydroid-settings
 fi
 
+# The dnsmasq package arrives as a waydroid dependency and enables itself; it would hold port 53
+# that waydroid-net.sh's own dnsmasq needs (README: "systemctl disable --now dnsmasq").
+systemctl disable --now dnsmasq.service >/dev/null 2>&1 || true
+
 echo "== Android images (LineageOS 17.1 VANILLA + HALIUM_10)"
 python3 - <<'PY'
 import hashlib, json, os, urllib.request, zipfile

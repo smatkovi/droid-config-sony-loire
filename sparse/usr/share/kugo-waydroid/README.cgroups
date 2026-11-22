@@ -1,0 +1,10 @@
+cgroups.json for the Waydroid container on kugo (LineageOS 17.1 image's file, two entries removed).
+
+Kernel 4.4 has no cgroup namespaces, so Android's init in the container mounts the host's real
+cgroup hierarchies. The original file then made the host's memory hierarchy root 0700
+(root:system), and init.rc chmods the cgroup2 mount (/dev/cg2_bpf, the host's unified hierarchy)
+to 0600. The Sailfish user session (uid 100000) could no longer create or enter cgroups: every
+user service failed with status=219/CGROUP, and lipstick could not be restarted.
+
+Removed: the "memory" controller (memcg is only used for per-app memory limits, off by default)
+and "Cgroups2" (eBPF network accounting). cpu, cpuacct, cpuset, blkio and schedtune stay.

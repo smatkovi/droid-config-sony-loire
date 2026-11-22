@@ -61,7 +61,14 @@ if [ -f "$P" ]; then
     done
 fi
 
-# 4. One launcher: waydroid-runner. The package's own one runs "waydroid show-full-ui", which
+# 4. The system dnsmasq (pulled in as a waydroid dependency; nothing else on Sailfish uses it)
+#    listens on 0.0.0.0:53, so waydroid-net.sh's own dnsmasq fails ("failed to create
+#    listening socket for 192.168.240.1: Address already in use") and every session ends at once.
+if systemctl -q is-enabled dnsmasq.service 2>/dev/null || systemctl -q is-active dnsmasq.service 2>/dev/null; then
+    systemctl disable --now --no-block dnsmasq.service >/dev/null 2>&1
+fi
+
+# 5. One launcher: waydroid-runner. The package's own one runs "waydroid show-full-ui", which
 #    on an uninitialised install would fetch the MAINLINE images that don't work here.
 D=/usr/share/applications/waydroid.desktop
 [ -f "$D" ] && ! grep -q '^NoDisplay=true' "$D" && sed -i 's/^\[Desktop Entry\]$/[Desktop Entry]\nNoDisplay=true/' "$D"
